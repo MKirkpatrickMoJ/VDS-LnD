@@ -1,70 +1,40 @@
-# Ministry of Justice Template Repository
+# VDS-L&D Repository
 
-[![Ministry of Justice Repository Compliance Badge](https://github-community.service.justice.gov.uk/repository-standards/api/template-repository/badge)](https://github-community.service.justice.gov.uk/repository-standards/template-repository)
+Welcome to a safe space to learn the source control and coding methods that are employed by the VDS team.
+The intention of this space is to allow engineers somewhere safe to learn basics on how to create code
+(PowerShell) that fits into the space, test scripts (Pester), basics of Terraform and GitHub Actions.
 
-This template repository equips you with the default initial files required for a Ministry of Justice GitHub repository.
+Additionally, there will be some tasks based around GitHub itself to provide exposure to some of the config
+and security aspects of the platform.
 
-## Included Files
+## Why this is Important
 
-The repository comes with the following preset files:
+As we transition away from a more GUI-Nerdio based way of working, and more towards an as-Code method,
+it is important that there is a consistency in how this is achieved, as well as confidence in being able
+to modify and create as required.
 
-- LICENSE
-- .gitignore
-- CODEOWNERS
-- dependabot.yml
-- GitHub Actions example files
-- Ministry of Justice Compliance Badge (public repositories only)
+## Setup
 
-## Setup Instructions
+Each section will provide additional pre-requisite setups, however to begin utilising this repository, the
+following must be completed:
 
-Once you've created your repository using this template, ensure the following steps:
 
-### Update README
 
-Edit this README.md file to document your project accurately. Take the time to create a clear, engaging, and informative README.md file. Include information like what your project does, how to install and run it, how to contribute, and any other pertinent details.
+## Format
 
-### Update repository description
+Each folder will have a set of instructions of tasks in increasing complexity. These are numbered in the
+suggested order of completion, as some of these will have dependencies on previous steps being completed
+before progressing onto the next. This will be:
 
-After you've created your repository, GitHub provides a brief description field that appears on the top of your repository's main page. This is a summary that gives visitors quick insight into the project. Using this field to provide a succinct overview of your repository is highly recommended.
+1. PowerShell - Most engineers are comfortable with PowerShell to some extent. This section is designed
+to help think about how we need to use it and give an easier intro to some of the Git elements.
+2. Pester - An introduction to testing. Pester a test suite designed for PowerShell, following this
+will provide greater understanding of what it is for, how it is used and why it is useful.
+3. Terraform - the ultimate infrastructure as code tool - covers almost all things infrastructure.
+This segment will provide some setup, creating a basic module, variables and calling these to create (and
+then destroy!)
+4. Nerdio as Code - a smaller segment as this is ultimately just PowerShell, but provides an opportunity
+to get a look at how the code is put together.
+5. GitHub Actions - A chance to utilise real DevOps principals such as CI/CD, as well as create a place
+to deploy code in an auditable fashion (as in, not locally).
 
-This description and your README.md will be one of the first things people see when they visit your repository. It's a good place to make a strong, concise first impression. Remember, this is often visible in search results on GitHub and search engines, so it's also an opportunity to help people discover your project.
-
-### Grant Team Permissions
-
-Assign permissions to the appropriate Ministry of Justice teams. Ensure at least one team is granted Admin permissions. Whenever possible, assign permissions to teams rather than individual users.
-
-Prefer to user GitHub Teams over individual access to repositories. Where appropriate, ensure GitHub Teams used are related to a Parent Team associated with a Business Unit to help ensure ownership can be easily identified.
-
-### Read about the GitHub repository standards
-
-Familiarise yourself with the Ministry of Justice GitHub Repository Standards. These standards ensure consistency, maintainability, and best practices across all our repositories.
-
-You can find the standards [here](https://github-community.service.justice.gov.uk/repository-standards/guidance).
-
-Please read and understand these standards thoroughly and enable them when you feel comfortable.
-
-### Modify the GitHub Standards Badge
-
-Once you've ensured that all the [GitHub Repository Standards](https://github-community.service.justice.gov.uk/repository-standards/guidance) have been applied to your repository, it's time to update the Ministry of Justice (MoJ) Compliance Badge located in the README file.
-
-The badge demonstrates that your repository is compliant with MoJ's standards.
-
-To update the badge, replace the `template-repository` in the badge URL with your repository's name. The badge URL should look like this:
-
-```markdown
-[![Ministry of Justice Repository Compliance Badge](https://github-community.service.justice.gov.uk/repository-standards/api/${your-repository-name}/badge)](https://github-community.service.justice.gov.uk/repository-standards/${your-reposistory-name})
-```
-
-**Please note** the badge will not function correctly if your repository is internal or private. In this case, you may remove the badge from your README.
-
-### Update CODEOWNERS
-
-(Optional) Modify the CODEOWNERS file to specify the teams or users authorized to approve pull requests.
-
-### Configure Dependabot
-
-Adapt the dependabot.yml file to match your project's [dependency manager](https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file#package-ecosystem) and to enable [automated pull requests for package updates](https://docs.github.com/en/code-security/supply-chain-security).
-
-### Dependency Review
-
-If your repository is private with no GitHub Advanced Security license, remove the `.github/workflows/dependency-review.yml` file.
