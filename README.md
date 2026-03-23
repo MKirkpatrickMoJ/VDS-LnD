@@ -4,7 +4,7 @@ Welcome to a safe space to learn the source control and coding methods that are 
 
 Additionally, there will be some tasks based around GitHub itself to provide exposure to some of the config and security aspects of the platform.
 
-## Why this is Important
+## Why This Is Important
 
 As we transition away from a more GUI-Nerdio based way of working, and more towards an as-Code method, it is important that there is a consistency in how this is achieved, as well as confidence in being able to modify and create as required.
 
@@ -12,6 +12,13 @@ As we transition away from a more GUI-Nerdio based way of working, and more towa
 
 Each section will provide additional pre-requisite setups, however to begin utilising this repository, the following must be completed:
 
+1. Install Visual Studio Code - login to GitHub using your MoJ credentials.
+2. Within VSCode, press `ctrl+shift+P` and select `Git: Clone`. Search for and select `VDS-LnD` - save this to a sensible location. If you already have a repository, you can add this to your existing workspace so you have visibility on multiple repositories. If this is the case, ensure you are working from the correct repository.
+3. Create a new branch so that you may make changes without impacting the main branch. For the purpose of this L&D space, complete the following steps:
+  1. Within VSCode, open a Terminal and ensure it is within the L&D Repo (it will look something like `PS C:\Users\YOU\REPODIRECTORY\VDS-LnD>`)
+  2. Enter the command to create a new branch, replacing NAME with your name: `git checkout -b NAME-VDS-LnD`
+  3. Ensure the correct branch is the working branch by entering: `git branch` which should match the one created.
+  4. NOTE that VDS operates a different way of working typically, information about this can be found (here)[https://dsdmoj.atlassian.net/wiki/spaces/MOJO/pages/5570789564/VDS+LLD+-+GitHub+Pull+Requests#Create-a-Branch]
 
 ## Format
 
