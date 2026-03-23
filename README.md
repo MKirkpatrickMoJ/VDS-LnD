@@ -18,7 +18,7 @@ Each section will provide additional pre-requisite setups, however to begin util
   1. Within VSCode, open a Terminal and ensure it is within the L&D Repo (it will look something like `PS C:\Users\YOU\REPODIRECTORY\VDS-LnD>`)
   2. Enter the command to create a new branch, replacing NAME with your name: `git checkout -b NAME-VDS-LnD`
   3. Ensure the correct branch is the working branch by entering: `git branch` which should match the one created.
-  4. NOTE that VDS operates a different way of working typically, information about this can be found (here)[https://dsdmoj.atlassian.net/wiki/spaces/MOJO/pages/5570789564/VDS+LLD+-+GitHub+Pull+Requests#Create-a-Branch]
+  4. NOTE that VDS operates a different way of working typically, information about this can be found [here](https://dsdmoj.atlassian.net/wiki/spaces/MOJO/pages/5570789564/VDS+LLD+-+GitHub+Pull+Requests#Create-a-Branch)
 
 ## Format
 
