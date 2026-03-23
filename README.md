@@ -12,11 +12,11 @@ As we transition away from a more GUI-Nerdio based way of working, and more towa
 
 Each section will provide additional pre-requisite setups, however to begin utilising this repository, the following must be completed:
 
-1. Install Visual Studio Code - login to GitHub using your MoJ credentials.
-2. Within VSCode, press `ctrl+shift+P` and select `Git: Clone`. Search for and select `VDS-LnD` - save this to a sensible location. If you already have a repository, you can add this to your existing workspace so you have visibility on multiple repositories. If this is the case, ensure you are working from the correct repository.
+1. Install **Visual Studio Code** - login to GitHub using your MoJ credentials.
+2. Within VSCode, press `ctrl+shift+P` and select `Git: Clone`. Search for and select `VDS-LnD` - save this to a sensible location. If you already have a repository, you can add this to your existing workspace so you have visibility on multiple repositories. If this is the case, **ensure you are working from the correct repository.**
 3. Create a new branch so that you may make changes without impacting the main branch. For the purpose of this L&D space, complete the following steps:
     1. Within VSCode, open a Terminal and ensure it is within the L&D Repo (it will look something like `PS C:\Users\YOU\REPODIRECTORY\VDS-LnD>`)
-    2. Enter the command to create a new branch, replacing NAME with your name: `git checkout -b NAME-VDS-LnD`
+    2. Enter the command to **create a new branch**, replacing NAME with your name: `git checkout -b NAME-VDS-LnD`
     3. Ensure the correct branch is the working branch by entering: `git branch` which should match the one created.
     4. NOTE that VDS operates a different way of working typically, information about this can be found [here](https://dsdmoj.atlassian.net/wiki/spaces/MOJO/pages/5570789564/VDS+LLD+-+GitHub+Pull+Requests#Create-a-Branch)
 
@@ -24,9 +24,8 @@ Each section will provide additional pre-requisite setups, however to begin util
 
 Each folder will have a set of instructions of tasks in increasing complexity. These are numbered in the suggested order of completion, as some of these will have dependencies on previous steps being completed before progressing onto the next. This will be:
 
-1. PowerShell - Most engineers are comfortable with PowerShell to some extent. This section is designed to help think about how we need to use it and give an easier intro to some of the Git elements.
-2. Pester - An introduction to testing. Pester a test suite designed for PowerShell, following this will provide greater understanding of what it is for, how it is used and why it is useful.
-3. Terraform - the ultimate infrastructure as code tool - covers almost all things infrastructure. This segment will provide some setup, creating a basic module, variables and calling these to create (and then destroy!)
-4. Nerdio as Code - a smaller segment as this is ultimately just PowerShell, but provides an opportunity to get a look at how the code is put together.
-5. GitHub Actions - A chance to utilise real DevOps principals such as CI/CD, as well as create a place to deploy code in an auditable fashion (as in, not locally).
-
+1. **PowerShell** - Most engineers are comfortable with PowerShell to some extent. This section is designed to help think about how we need to use it and give an easier intro to some of the Git elements.
+2. **Pester** - An introduction to testing. Pester a test suite designed for PowerShell, following this will provide greater understanding of what it is for, how it is used and why it is useful.
+3. **Terraform** - the ultimate infrastructure as code tool - covers almost all things infrastructure. This segment will provide some setup, creating a basic module, variables and calling these to create (and then destroy!)
+4. **Nerdio as Code** - a smaller segment as this is ultimately just PowerShell, but provides an opportunity to get a look at how the code is put together.
+5. **GitHub Actions** - A chance to utilise real DevOps principals such as CI/CD, as well as create a place to deploy code in an auditable fashion (as in, not locally).
