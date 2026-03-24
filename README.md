@@ -14,7 +14,8 @@ Each section will provide additional pre-requisite setups, however to begin util
 
 1. Install **Visual Studio Code** - login to GitHub using your MoJ credentials.
 2. Within VSCode, press `ctrl+shift+P` and select `Git: Clone`. Search for and select `VDS-LnD` - save this to a sensible location. If you already have a repository, you can add this to your existing workspace so you have visibility on multiple repositories. If this is the case, **ensure you are working from the correct repository.**
-3. Create a new branch so that you may make changes without impacting the main branch. For the purpose of this L&D space, complete the following steps:
+3. Each section will advise on extensions and any required other software needed to complete the section.
+4. Create a new branch so that you may make changes without impacting the main branch. For the purpose of this L&D space, complete the following steps:
     1. Within VSCode, open a Terminal and ensure it is within the L&D Repo (it will look something like `PS C:\Users\YOU\REPODIRECTORY\VDS-LnD>`)
     2. Enter the command to **create a new branch**, replacing NAME with your name: `git checkout -b NAME-VDS-LnD`
     3. Ensure the correct branch is the working branch by entering: `git branch` which should match the one created.
