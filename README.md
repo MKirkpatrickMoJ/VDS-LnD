@@ -12,7 +12,7 @@ As we transition away from a more GUI-Nerdio based way of working, and more towa
 
 Each section will provide additional pre-requisite setups, however to begin utilising this repository, the following must be completed:
 
-1. Install **Visual Studio Code** - login to GitHub using your MoJ credentials.
+1. Install **Visual Studio Code** - login to GitHub using your MoJ GitHub credentials.
 2. Within VSCode, press `ctrl+shift+P` and select `Git: Clone`. Search for and select `VDS-LnD` - save this to a sensible location. If you already have a repository, you can add this to your existing workspace so you have visibility on multiple repositories. If this is the case, **ensure you are working from the correct repository.**
 3. Each section will advise on extensions and any required other software needed to complete the section.
 4. Create a new branch so that you may make changes without impacting the main branch. For the purpose of this L&D space, complete the following steps:
