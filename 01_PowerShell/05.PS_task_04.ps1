@@ -1,6 +1,6 @@
 <#
 SCENARIO:
-You now need to build a script from scratch rather than refactor an existing one. The VDS team wants
+You now need to build a script from scratch rather than refactor an existing one. An AVD team wants
 an exception report from the session host JSON export (06.TASK-DATA.json) created in the previous task.
 Specifically, they need the name of every host that is not in an Available state, along with the
 AssignedUser for that host, so support teams can quickly identify hosts that may need intervention.

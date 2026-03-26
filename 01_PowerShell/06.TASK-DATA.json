@@ -1,6 +1,6 @@
 [
   {
-    "Name": "avd-prod-hp-01/avd-prod-sh-01.justice.gov.uk",
+    "Name": "avd-prod-hp-01/avd-prod-sh-01.avdteam.example",
     "HostPoolName": "avd-prod-hp-01",
     "ResourceGroupName": "rg-avd-prod",
     "Status": "Available",
@@ -15,7 +15,7 @@
     "VmResourceId": "/subscriptions/00000000-0000-0000-0000-000000000001/resourceGroups/rg-avd-prod/providers/Microsoft.Compute/virtualMachines/avd-prod-sh-01"
   },
   {
-    "Name": "avd-prod-hp-01/avd-prod-sh-02.justice.gov.uk",
+    "Name": "avd-prod-hp-01/avd-prod-sh-02.avdteam.example",
     "HostPoolName": "avd-prod-hp-01",
     "ResourceGroupName": "rg-avd-prod",
     "Status": "Available",
@@ -23,14 +23,14 @@
     "Sessions": 7,
     "MaxSessionLimit": 10,
     "AllowNewSession": true,
-    "AssignedUser": "john.smith@justice.gov.uk",
+    "AssignedUser": "john.smith@avdteam.example",
     "AgentVersion": "1.0.5714.1600",
     "OSVersion": "10.0.19044.2965",
     "LastHeartBeat": "2026-03-25T09:12:00Z",
     "VmResourceId": "/subscriptions/00000000-0000-0000-0000-000000000001/resourceGroups/rg-avd-prod/providers/Microsoft.Compute/virtualMachines/avd-prod-sh-02"
   },
   {
-    "Name": "avd-prod-hp-01/avd-prod-sh-03.justice.gov.uk",
+    "Name": "avd-prod-hp-01/avd-prod-sh-03.avdteam.example",
     "HostPoolName": "avd-prod-hp-01",
     "ResourceGroupName": "rg-avd-prod",
     "Status": "Unavailable",
@@ -45,7 +45,7 @@
     "VmResourceId": "/subscriptions/00000000-0000-0000-0000-000000000001/resourceGroups/rg-avd-prod/providers/Microsoft.Compute/virtualMachines/avd-prod-sh-03"
   },
   {
-    "Name": "avd-prod-hp-01/avd-prod-sh-04.justice.gov.uk",
+    "Name": "avd-prod-hp-01/avd-prod-sh-04.avdteam.example",
     "HostPoolName": "avd-prod-hp-01",
     "ResourceGroupName": "rg-avd-prod",
     "Status": "NeedsAssistance",
@@ -60,7 +60,7 @@
     "VmResourceId": "/subscriptions/00000000-0000-0000-0000-000000000001/resourceGroups/rg-avd-prod/providers/Microsoft.Compute/virtualMachines/avd-prod-sh-04"
   },
   {
-    "Name": "avd-prod-hp-01/avd-prod-sh-05.justice.gov.uk",
+    "Name": "avd-prod-hp-01/avd-prod-sh-05.avdteam.example",
     "HostPoolName": "avd-prod-hp-01",
     "ResourceGroupName": "rg-avd-prod",
     "Status": null,
@@ -68,14 +68,14 @@
     "Sessions": 2,
     "MaxSessionLimit": 10,
     "AllowNewSession": true,
-    "AssignedUser": "jane.doe@justice.gov.uk",
+    "AssignedUser": "jane.doe@avdteam.example",
     "AgentVersion": "1.0.5714.1600",
     "OSVersion": "10.0.19044.2965",
     "LastHeartBeat": "2026-03-25T09:01:00Z",
     "VmResourceId": "/subscriptions/00000000-0000-0000-0000-000000000001/resourceGroups/rg-avd-prod/providers/Microsoft.Compute/virtualMachines/avd-prod-sh-05"
   },
   {
-    "Name": "avd-prod-hp-01/avd-prod-sh-06.justice.gov.uk",
+    "Name": "avd-prod-hp-01/avd-prod-sh-06.avdteam.example",
     "HostPoolName": "avd-prod-hp-01",
     "ResourceGroupName": "rg-avd-prod",
     "Status": "Available",
@@ -83,7 +83,7 @@
     "Sessions": 1,
     "MaxSessionLimit": 10,
     "AllowNewSession": true,
-    "AssignedUser": "bob.jones@justice.gov.uk",
+    "AssignedUser": "bob.jones@avdteam.example",
     "AgentVersion": "1.0.5714.1600",
     "OSVersion": "10.0.19044.2965",
     "LastHeartBeat": "2026-03-25T08:58:00Z",

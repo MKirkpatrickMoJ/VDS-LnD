@@ -10,16 +10,34 @@ As we transition away from a more GUI-Nerdio based way of working, and more towa
 
 ## Setup
 
+### Prerequisites
+
+Before starting, ensure you have the following installed and updated. Open a terminal and run these commands (in VS Code's integrated terminal or your local PowerShell):
+
+```powershell
+# Update PowerShell to 7.x (if not already installed)
+winget install --id Microsoft.PowerShell --source winget
+
+# After installation, restart VS Code and reopen a terminal to use PS 7
+
+# Install required PowerShell modules
+Install-Module -Name Az -Force -AllowClobber -Scope CurrentUser
+Install-Module -Name Microsoft.Graph -Force -Scope CurrentUser
+Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser
+```
+
+### Repository Setup
+
 Each section will provide additional pre-requisite setups, however to begin utilising this repository, the following must be completed:
 
-1. Install **Visual Studio Code** - login to GitHub using your MoJ GitHub credentials.
-2. Within VSCode, press `ctrl+shift+P` and select `Git: Clone`. Search for and select `VDS-LnD` - save this to a sensible location. If you already have a repository, you can add this to your existing workspace so you have visibility on multiple repositories. If this is the case, **ensure you are working from the correct repository.**
+1. Install **Visual Studio Code**.
+2. Within VSCode, press `ctrl+shift+P` and select `Git: Clone`. Search for and select this repository, then save it to a sensible location. If you already have a repository, you can add this to your existing workspace so you have visibility on multiple repositories. If this is the case, **ensure you are working from the correct repository.**
 3. Each section will advise on extensions and any required other software needed to complete the section.
 4. Create a new branch so that you may make changes without impacting the main branch. For the purpose of this L&D space, complete the following steps:
     1. Within VSCode, open a Terminal and ensure it is within the L&D Repo (it will look something like `PS C:\Users\YOU\REPODIRECTORY\VDS-LnD>`)
     2. Enter the command to **create a new branch**, replacing NAME with your name: `git checkout -b NAME-VDS-LnD`
     3. Ensure the correct branch is the working branch by entering: `git branch` which should match the one created.
-    4. NOTE that VDS operates a different way of working typically, information about this can be found [here](https://dsdmoj.atlassian.net/wiki/spaces/MOJO/pages/5570789564/VDS+LLD+-+GitHub+Pull+Requests#Create-a-Branch)
+    4. NOTE: Branching conventions may differ in production repositories. Follow your team standards where applicable.
 
 ## Format
 
