@@ -2,6 +2,8 @@
 
 Welcome to a safe space to learn the source control and coding methods that are employed by the VDS team.The intention of this space is to allow engineers somewhere safe to learn basics on how to create code (PowerShell) that fits into the space, test scripts (Pester), basics of Terraform and GitHub Actions.
 
+To view markdown files correctly within VSCode, press `ctrl+shift+V` after opening the file. This renders the files to their intended view, rather than the code view, which is harder to read. It is also possible to open them within GitHub directly, but this requires more steps when working through the tasks.
+
 Additionally, there will be some tasks based within GitHub itself.
 
 ## Why This Is Important
