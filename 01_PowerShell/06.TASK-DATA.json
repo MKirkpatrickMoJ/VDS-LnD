@@ -83,7 +83,7 @@
     "Sessions": 1,
     "MaxSessionLimit": 10,
     "AllowNewSession": true,
-    "AssignedUser": "bob.jones@avdteam.example",
+    "AssignedUser": "frank.davies@avdteam.example",
     "AgentVersion": "1.0.5714.1600",
     "OSVersion": "10.0.19044.2965",
     "LastHeartBeat": "2026-03-25T08:58:00Z",

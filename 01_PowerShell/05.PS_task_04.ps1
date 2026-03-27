@@ -41,4 +41,4 @@ TODO 7: Use Write-Host at each major step (start, validation passed, parsing com
 TODO 8: Output a clear final result (objects are fine) and a summary count.
 #>
 
-# Build the full solution below using the requirements above.
+# Build the full solution below using the requirements above, the previous tasks should make this straightforward.

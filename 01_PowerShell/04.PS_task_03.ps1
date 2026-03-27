@@ -2,9 +2,15 @@
 SCENARIO:
 An AVD team needs a daily session host report to give service desk staff a quick view of host
 health across the AVD host pool. A data export from Azure has been saved as a JSON file
-(06.TASK-DATA.json). The team wants a CSV collating the key fields: the VM name (not the full
-resource path), Status, Sessions, MaxSessionLimit, AllowNewSession, AssignedUser, and a formatted
-LastHeartBeat timestamp.
+(06.TASK-DATA.json). The team wants a CSV collating the key fields: 
+
+- the VM name (not the full resource path)
+- Status
+- Sessions
+- MaxSessionLimit
+- AllowNewSession
+- AssignedUser
+- LastHeartBeat timestamp
 
 A first implementation has been written that reads the file and builds the CSV rows. It works for
 some hosts, but the data export is not always complete — some fields may be missing — and the
