@@ -1,0 +1,22 @@
+name: LnD-GHA-Task01
+
+on:
+  workflow_dispatch
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: windows-latest
+
+    steps:
+     - name: Checkout Repo
+       uses: actions/checkout@v4
+
+     - name: Run Task01 Script
+       shell: pwsh
+       run: |         
+          $ErrorActionPreference = 'Stop'
+
+          Write-Host "Hello World! This is Task 01 for LnD GHA Training"
