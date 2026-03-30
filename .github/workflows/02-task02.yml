@@ -1,0 +1,22 @@
+name: LnD-GHA-Task02
+
+on:
+  workflow_dispatch
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: windows-latest
+
+    steps:
+     - name: Checkout Repo
+       uses: actions/checkout@v4
+
+     - name: Task02 Info Script
+       shell: pwsh
+       run: |
+         Write-Host "This is Task 02!"
+         Write-Host "I want to know about what host I'm running on."
+         Write-Host "Let's find out in the next Step..."
