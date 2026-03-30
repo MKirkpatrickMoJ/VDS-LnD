@@ -15,6 +15,6 @@ variable "resource_group_name" {
   description = "Name of the resource group where the application group will be created."
 }
 variable "host_pool_id" {
-  type = string
+  type        = string
   description = "ID of the host pool to which the application group will be associated."
 }
