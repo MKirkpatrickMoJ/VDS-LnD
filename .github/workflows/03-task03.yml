@@ -1,0 +1,35 @@
+name: LnD-GHA-Task03
+
+on:
+  workflow_dispatch:
+    inputs:
+      example:
+        description: An example input
+        required: true
+        type: choice
+        options:
+          - option1
+          - option2
+      example2:
+        description: Another example boolean input
+        required: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: windows-latest
+
+    steps:
+     - name: Checkout Repo
+       uses: actions/checkout@v4
+
+     - name: Task03 Info Script
+       shell: pwsh
+       run: |
+         Write-Host "This is Task 03!"
+         Write-Host "I need to run a script using the inputs from the workflow dispatch event."
+         Write-Host "The inputs need to be modified to be accurate to reflect the needs of the script"
+         Write-Host "Then the step to call the script needs to be added to the workflow file, along with the parameters."
