@@ -1,0 +1,30 @@
+name: LnD-GHA-Task04-Caller
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform on the target'
+        required: true
+        type: choice
+        options:
+          - GET
+          - POST
+          - PUT
+      env:
+        description: 'Target environment for the API'
+        required: true
+        type: choice
+        options:
+          - dev
+          - prod
+
+permissions:
+  contents: read
+
+jobs:
+  call_task04:
+    uses: ./.github/workflows/04-task04-template.yml
+    with:
+      action: ${{ inputs.action }}
+      env: ${{ inputs.env }}

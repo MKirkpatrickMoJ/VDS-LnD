@@ -1,0 +1,32 @@
+name: LnD-GHA-Task04-Template
+
+on:
+  workflow_call:
+    inputs:
+      action:
+        description: 'Action to perform on the target'
+        required: true
+        type: string
+      env:
+        description: 'Target environment for the API'
+        required: true
+        type: string
+      
+permissions:
+  contents: read
+
+jobs:
+  task04:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.env }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Run Task 04 Script
+        shell: pwsh
+        run: |  
+          $action = "${{ inputs.action }}"
+          $url = "${{ vars.TARGET }}"
+          $message = "${{ vars.MESSAGE }}"
+          .\05_GitHubActions\gha_scripts\04templateScript.ps1 -Method $action -BaseUrl $url -Message $message
