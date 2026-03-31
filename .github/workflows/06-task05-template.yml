@@ -1,0 +1,24 @@
+name: LnD-GHA-Task05-Template
+
+on:
+  workflow_call:
+    inputs:
+      # TODO: Define the three inputs that match the parameters in 05deployScript.ps1
+      # - env         (string, required) - the target environment
+      # - version      (string, required) - the version number or tag being deployed
+
+permissions:
+  contents: read
+
+jobs:
+  task05:
+    runs-on: ubuntu-latest
+    # TODO: Set the job environment using the env input so that environment-scoped variables are available
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # - name: Run Task 05 Script
+      #   shell: pwsh
+      #   run: |
+      #      TODO: Call 05deployScript.ps1, passing the inputs as parameters
