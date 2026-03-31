@@ -12,7 +12,7 @@ Write-Host "Action : $Action"
 Write-Host "Target : $Target"
 Write-Host "DryRun : $DryRun"
 
-if ($DryRun) {
+if ($DryRun -eq $true) {
     Write-Host "This is a dry run. No actions will be performed."
     Write-Host "Would have executed: $Action on $Target"
     Write-Host "Exiting without performing any actions."
