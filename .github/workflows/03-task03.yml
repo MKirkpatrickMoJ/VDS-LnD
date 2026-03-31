@@ -14,6 +14,10 @@ on:
         description: Another example boolean input
         required: false
         type: boolean
+      example3:
+        description: An example string input
+        required: true
+        type: string
 
 permissions:
   contents: read
