@@ -1,0 +1,1169 @@
+name: Validate Learner Task Completion
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  validate-powershell-tasks:
+    name: PowerShell Tasks
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate PS-01 (Parameterised Report Script)
+        id: ps01
+        shell: pwsh
+        run: |
+          $Script = Get-Content -Path "./01_PowerShell/02.PS_task_01.ps1" -Raw
+          $Results = @()
+          
+          # Check 1: Has parameters defined (param block)
+          if ($Script -match 'param\s*\(') {
+            $Results += "PASS: Script has param block"
+          } else {
+            $Results += "FAIL: Script missing param block - TODO 1 requires converting hardcoded values to parameters"
+          }
+          
+          # Check 2: EnvironmentName is a parameter (not hardcoded)
+          if ($Script -match '\$EnvironmentName\s*=\s*[''"]LD[''"]') {
+            $Results += "FAIL: EnvironmentName is still hardcoded - TODO 1 requires making it a parameter"
+          } else {
+            $Results += "PASS: EnvironmentName not hardcoded"
+          }
+          
+          # Check 3: HostPoolName is a parameter (not hardcoded) 
+          if ($Script -match '\$HostPoolName\s*=\s*[''"]avd-hostpool-01[''"]') {
+            $Results += "FAIL: HostPoolName is still hardcoded - TODO 1 requires making it a parameter"
+          } else {
+            $Results += "PASS: HostPoolName not hardcoded"
+          }
+          
+          # Check 4: SessionHostName generated dynamically (TODO 2)
+          if ($Script -match '\$SessionHostName\s*=\s*[''"]avd-sh-01[''"]') {
+            $Results += "FAIL: SessionHostName is still hardcoded - TODO 2 requires generating from machine context"
+          } else {
+            $Results += "PASS: SessionHostName not hardcoded"
+          }
+          
+          # Check 5: RunDate generated dynamically with UTC (TODO 3)
+          if ($Script -match '\$RunDate\s*=\s*[''"]2026-01-01') {
+            $Results += "FAIL: RunDate is still hardcoded - TODO 3 requires generating from current UTC time"
+          } else {
+            $Results += "PASS: RunDate not hardcoded"
+          }
+          
+          # Check 6: Uses Get-Date for dynamic date generation
+          if ($Script -match 'Get-Date|ToUniversalTime|\[DateTime\]::UtcNow') {
+            $Results += "PASS: Uses dynamic date generation"
+          } else {
+            $Results += "FAIL: Missing dynamic date generation - TODO 3 requires current UTC time"
+          }
+          
+          # Check 7: OutputPath built dynamically with Join-Path (TODO 4)
+          if ($Script -match 'Join-Path') {
+            $Results += "PASS: Uses Join-Path for OutputPath"
+          } else {
+            $Results += "FAIL: Missing Join-Path - TODO 4 requires building OutputPath dynamically"
+          }
+          
+          # Check 8: OutputPath includes timestamp
+          if ($Script -match '\$OutputPath.*timestamp|timestamp.*\$OutputPath|Get-Date.*Format.*\$OutputPath|\$OutputPath.*Get-Date') {
+            $Results += "PASS: OutputPath appears to include timestamp"
+          } elseif ($Script -match '\$OutputPath\s*=\s*[''"].*report-ld-avd-sh-01\.json[''"]') {
+            $Results += "FAIL: OutputPath is still hardcoded - TODO 4 requires timestamped filename"
+          } else {
+            $Results += "PASS: OutputPath not hardcoded (may include timestamp)"
+          }
+          
+          # Summarize
+          $Passed = ($Results | Where-Object { $_ -match '^PASS' }).Count
+          $Failed = ($Results | Where-Object { $_ -match '^FAIL' }).Count
+          
+          Write-Host "===== PS-01: Parameterised Report Script ====="
+          $Results | ForEach-Object { Write-Host $_ }
+          Write-Host ""
+          Write-Host "Result: $Passed passed, $Failed failed"
+          
+          if ($Failed -eq 0) {
+            Write-Host "::notice::PS-01 COMPLETED - All requirements met"
+            echo "ps01_status=PASSED" >> $env:GITHUB_OUTPUT
+          } else {
+            Write-Host "::warning::PS-01 INCOMPLETE - $Failed requirement(s) not met"
+            echo "ps01_status=FAILED" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Validate PS-02 (Refactor to Function)
+        id: ps02
+        shell: pwsh
+        run: |
+          $Script = Get-Content -Path "./01_PowerShell/03.PS_task_02.ps1" -Raw
+          $Results = @()
+          
+          # Check 1: Has function Test-HostNameCompliance (TODO 1)
+          if ($Script -match 'function\s+Test-HostNameCompliance') {
+            $Results += "PASS: Function Test-HostNameCompliance exists"
+          } else {
+            $Results += "FAIL: Missing function Test-HostNameCompliance - TODO 1 requires creating this function"
+          }
+          
+          # Check 2: Function accepts required parameters (TODO 1)
+          if ($Script -match 'Test-HostNameCompliance.*param.*HostName|param.*\$HostName') {
+            $Results += "PASS: Function has HostName parameter"
+          } else {
+            $Results += "FAIL: Function missing HostName parameter - TODO 1 requires HostName, ExpectedPrefix, MaxLength"
+          }
+          
+          # Check 3: Uses foreach loop (TODO 4)
+          if ($Script -match 'foreach\s*\(' -or $Script -match 'ForEach-Object') {
+            $Results += "PASS: Uses foreach loop"
+          } else {
+            $Results += "FAIL: Missing foreach loop - TODO 4 requires replacing repeated blocks with a loop"
+          }
+          
+          # Check 4: Has array of host names (TODO 4)
+          if ($Script -match '@\s*\([^)]*avd-prod-sh-01') {
+            $Results += "PASS: Has array of host names"
+          } else {
+            $Results += "FAIL: Missing host name array - TODO 4 requires defining an array of host names"
+          }
+          
+          # Check 5: Repetitive code removed (4 separate Host blocks should be gone)
+          $HostBlockCount = ([regex]::Matches($Script, "# Host \d")).Count
+          if ($HostBlockCount -eq 0) {
+            $Results += "PASS: Repetitive code blocks removed"
+          } else {
+            $Results += "FAIL: Still has $HostBlockCount repetitive Host blocks - refactor to use function and loop"
+          }
+          
+          # Check 6: Function returns result object (TODO 3)
+          if ($Script -match 'function\s+Test-HostNameCompliance[\s\S]*?return\s+\$') {
+            $Results += "PASS: Function returns result"
+          } elseif ($Script -match 'function\s+Test-HostNameCompliance[\s\S]*?\[PSCustomObject\]') {
+            $Results += "PASS: Function creates result object"
+          } else {
+            $Results += "FAIL: Function should return the result object - TODO 3"
+          }
+          
+          # Summarize
+          $Passed = ($Results | Where-Object { $_ -match '^PASS' }).Count
+          $Failed = ($Results | Where-Object { $_ -match '^FAIL' }).Count
+          
+          Write-Host "===== PS-02: Refactor to Function ====="
+          $Results | ForEach-Object { Write-Host $_ }
+          Write-Host ""
+          Write-Host "Result: $Passed passed, $Failed failed"
+          
+          if ($Failed -eq 0) {
+            Write-Host "::notice::PS-02 COMPLETED - All requirements met"
+            echo "ps02_status=PASSED" >> $env:GITHUB_OUTPUT
+          } else {
+            Write-Host "::warning::PS-02 INCOMPLETE - $Failed requirement(s) not met"
+            echo "ps02_status=FAILED" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Validate PS-03 (Error Handling)
+        id: ps03
+        shell: pwsh
+        run: |
+          $Script = Get-Content -Path "./01_PowerShell/04.PS_task_03.ps1" -Raw
+          $Results = @()
+          
+          # Check 1: Has try/catch block (TODO 2)
+          if ($Script -match 'try\s*\{[\s\S]*?catch\s*\{') {
+            $Results += "PASS: Has try/catch block for error handling"
+          } else {
+            $Results += "FAIL: Missing try/catch - TODO 2 requires wrapping risky operations"
+          }
+          
+          # Check 2: Has validation with Write-Warning (TODO 1)
+          if ($Script -match 'Write-Warning') {
+            $Results += "PASS: Uses Write-Warning for validation issues"
+          } else {
+            $Results += "FAIL: Missing Write-Warning - TODO 1 requires warning messages for missing data"
+          }
+          
+          # Check 3: Has placeholder value substitution (TODO 1)
+          if ($Script -match 'placeholder|N/A|Unknown|""|''''|\$null.*\?|if.*null|-replace|\?\?') {
+            $Results += "PASS: Appears to handle placeholder values"
+          } else {
+            $Results += "FAIL: Missing placeholder handling - TODO 1 requires inserting placeholders for missing values"
+          }
+          
+          # Check 4: Handles DateTime parsing safely (the risky operation)
+          if ($Script -match 'try[\s\S]*?DateTime.*Parse|try[\s\S]*?ParseExact|DateTime.*Parse[\s\S]*?catch') {
+            $Results += "PASS: DateTime parsing wrapped in try/catch"
+          } elseif ($Script -match '\[DateTime\]::TryParse') {
+            $Results += "PASS: Uses TryParse for safe DateTime handling"
+          } else {
+            $Results += "FAIL: DateTime parsing not protected - TODO 2 requires try/catch around risky operation"
+          }
+          
+          # Check 5: Loop continues after error (all 6 hosts should be processed)
+          if ($Script -match 'catch[\s\S]*?continue|catch[\s\S]*?\$CsvRows') {
+            $Results += "PASS: Loop continues after catching error"
+          } else {
+            $Results += "FAIL: Ensure loop continues after error - all hosts should be processed"
+          }
+          
+          # Summarize
+          $Passed = ($Results | Where-Object { $_ -match '^PASS' }).Count
+          $Failed = ($Results | Where-Object { $_ -match '^FAIL' }).Count
+          
+          Write-Host "===== PS-03: Error Handling ====="
+          $Results | ForEach-Object { Write-Host $_ }
+          Write-Host ""
+          Write-Host "Result: $Passed passed, $Failed failed"
+          
+          if ($Failed -eq 0) {
+            Write-Host "::notice::PS-03 COMPLETED - All requirements met"
+            echo "ps03_status=PASSED" >> $env:GITHUB_OUTPUT
+          } else {
+            Write-Host "::warning::PS-03 INCOMPLETE - $Failed requirement(s) not met"
+            echo "ps03_status=FAILED" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Validate PS-04 (Build from Scratch)
+        id: ps04
+        shell: pwsh
+        run: |
+          $Script = Get-Content -Path "./01_PowerShell/05.PS_task_04.ps1" -Raw
+          $Results = @()
+          
+          # Check 1: Has param block with JsonPath parameter (TODO 1)
+          if ($Script -match 'param\s*\([\s\S]*?\$JsonPath') {
+            $Results += "PASS: Has JsonPath parameter"
+          } else {
+            $Results += "FAIL: Missing JsonPath parameter - TODO 1 requires script parameter for input JSON path"
+          }
+          
+          # Check 2: Has file validation with Test-Path (TODO 2)
+          if ($Script -match 'Test-Path') {
+            $Results += "PASS: Has file validation with Test-Path"
+          } else {
+            $Results += "FAIL: Missing Test-Path - TODO 2 requires validating file exists"
+          }
+          
+          # Check 3: Has try/catch for JSON parsing (TODO 3)
+          if ($Script -match 'try[\s\S]*?ConvertFrom-Json|ConvertFrom-Json[\s\S]*?catch') {
+            $Results += "PASS: JSON parsing has try/catch"
+          } else {
+            $Results += "FAIL: Missing try/catch for JSON parsing - TODO 3 requires error handling"
+          }
+          
+          # Check 4: Has parameterised function (TODO 4)
+          if ($Script -match 'function\s+\w+[\s\S]*?param') {
+            $Results += "PASS: Has parameterised function"
+          } else {
+            $Results += "FAIL: Missing parameterised function - TODO 4 requires function with HostData parameter"
+          }
+          
+          # Check 5: Filters by Status not equal to Available (TODO 5)
+          if ($Script -match 'Status.*-ne.*Available|Status.*-notlike.*Available|Where.*Status.*Available|Status.*!=.*Available|-ine.*Available') {
+            $Results += "PASS: Filters for non-Available status"
+          } else {
+            $Results += "FAIL: Missing status filter - TODO 5 requires returning hosts where Status is not Available"
+          }
+          
+          # Check 6: Uses Write-Host for feedback (TODO 7)
+          $WriteHostCount = ([regex]::Matches($Script, 'Write-Host')).Count
+          if ($WriteHostCount -ge 3) {
+            $Results += "PASS: Uses Write-Host for feedback ($WriteHostCount instances)"
+          } else {
+            $Results += "FAIL: Needs more Write-Host statements - TODO 7 requires feedback at each major step"
+          }
+          
+          # Check 7: Outputs summary count (TODO 8)
+          if ($Script -match 'Count|\.Length') {
+            $Results += "PASS: Outputs count/summary"
+          } else {
+            $Results += "FAIL: Missing summary count - TODO 8 requires a summary count output"
+          }
+          
+          # Check 8: Not just comments/empty - has actual implementation
+          $CodeLines = ($Script -split "`n" | Where-Object { $_ -match '\S' -and $_ -notmatch '^\s*#' }).Count
+          if ($CodeLines -gt 20) {
+            $Results += "PASS: Has substantial implementation ($CodeLines lines of code)"
+          } else {
+            $Results += "FAIL: Script appears incomplete - build full solution as per requirements"
+          }
+          
+          # Summarize
+          $Passed = ($Results | Where-Object { $_ -match '^PASS' }).Count
+          $Failed = ($Results | Where-Object { $_ -match '^FAIL' }).Count
+          
+          Write-Host "===== PS-04: Build from Scratch ====="
+          $Results | ForEach-Object { Write-Host $_ }
+          Write-Host ""
+          Write-Host "Result: $Passed passed, $Failed failed"
+          
+          if ($Failed -eq 0) {
+            Write-Host "::notice::PS-04 COMPLETED - All requirements met"
+            echo "ps04_status=PASSED" >> $env:GITHUB_OUTPUT
+          } else {
+            Write-Host "::warning::PS-04 INCOMPLETE - $Failed requirement(s) not met"
+            echo "ps04_status=FAILED" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: PowerShell Module Summary
+        shell: pwsh
+        run: |
+          Write-Host ""
+          Write-Host "========================================="
+          Write-Host "  POWERSHELL MODULE SUMMARY"
+          Write-Host "========================================="
+          Write-Host "PS-01 (Parameterised Script): ${{ steps.ps01.outputs.ps01_status }}"
+          Write-Host "PS-02 (Refactor to Function): ${{ steps.ps02.outputs.ps02_status }}"
+          Write-Host "PS-03 (Error Handling): ${{ steps.ps03.outputs.ps03_status }}"
+          Write-Host "PS-04 (Build from Scratch): ${{ steps.ps04.outputs.ps04_status }}"
+          Write-Host "========================================="
+
+  validate-pester-tasks:
+    name: Pester Tasks
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate PST-01 (Fix Broken Tests)
+        id: pst01
+        shell: pwsh
+        run: |
+          $Script = Get-Content -Path "./02_Pester/03.Pester_Pester_01.tests.ps1" -Raw
+          $Results = @()
+          
+          # Check 1: Connect-AzAccount mock is uncommented (Issue 1)
+          if ($Script -match 'Mock\s+Connect-AzAccount' -and $Script -notmatch '#\s*Mock\s+Connect-AzAccount') {
+            $Results += "PASS: Connect-AzAccount mock is active"
+          } else {
+            $Results += "FAIL: Connect-AzAccount mock may be commented out - uncomment it"
+          }
+          
+          # Check 2: Has CSV export failure test (new test requirement)
+          if ($Script -match 'Export-Csv.*fail|fail.*Export-Csv|Should.*Throw.*Export|Mock.*Export-Csv.*throw') {
+            $Results += "PASS: Has CSV export failure test"
+          } else {
+            $Results += "FAIL: Missing CSV export failure test - add test for failed CSV export"
+          }
+          
+          # Check 3: Test file has multiple It blocks
+          $ItBlockCount = ([regex]::Matches($Script, "^\s*It\s+'", [System.Text.RegularExpressions.RegexOptions]::Multiline)).Count
+          if ($ItBlockCount -ge 6) {
+            $Results += "PASS: Has sufficient test coverage ($ItBlockCount It blocks)"
+          } else {
+            $Results += "FAIL: May need more tests - expected at least 6 It blocks, found $ItBlockCount"
+          }
+          
+          # Check 4: Uses Should -Throw correctly 
+          if ($Script -match 'Should\s+-Throw') {
+            $Results += "PASS: Uses Should -Throw assertions"
+          } else {
+            $Results += "FAIL: Missing Should -Throw - fix assertions to use -Throw"
+          }
+          
+          # Summarize
+          $Passed = ($Results | Where-Object { $_ -match '^PASS' }).Count
+          $Failed = ($Results | Where-Object { $_ -match '^FAIL' }).Count
+          
+          Write-Host "===== PST-01: Fix Broken Tests ====="
+          $Results | ForEach-Object { Write-Host $_ }
+          Write-Host ""
+          Write-Host "Result: $Passed passed, $Failed failed"
+          
+          if ($Failed -eq 0) {
+            Write-Host "::notice::PST-01 COMPLETED - All requirements met"
+            echo "pst01_status=PASSED" >> $env:GITHUB_OUTPUT
+          } else {
+            Write-Host "::warning::PST-01 INCOMPLETE - $Failed requirement(s) not met"
+            echo "pst01_status=FAILED" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Validate PST-02 (Complete Test Suite)
+        id: pst02
+        shell: pwsh
+        run: |
+          $Script = Get-Content -Path "./02_Pester/05.Pester_Pester_02.tests.ps1" -Raw
+          $Results = @()
+          
+          # Check 1: Has BeforeAll block
+          if ($Script -match 'BeforeAll\s*\{') {
+            $Results += "PASS: Has BeforeAll block"
+          } else {
+            $Results += "FAIL: Missing BeforeAll block - required for test setup"
+          }
+          
+          # Check 2: Has Describe block
+          if ($Script -match 'Describe\s+') {
+            $Results += "PASS: Has Describe block"
+          } else {
+            $Results += "FAIL: Missing Describe block - required for test structure"
+          }
+          
+          # Check 3: Has parameter validation tests
+          if ($Script -match 'param|TenantId|SourceGroupId|TargetGroupId') {
+            $Results += "PASS: Covers parameter validation"
+          } else {
+            $Results += "FAIL: Missing parameter validation tests"
+          }
+          
+          # Check 4: Has mock for Graph commands
+          if ($Script -match 'Mock.*Connect-MgGraph|Mock.*Get-MgGroup|Mock.*Get-MgGroupMember') {
+            $Results += "PASS: Has Graph command mocks"
+          } else {
+            $Results += "FAIL: Missing Graph command mocks - need to mock external calls"
+          }
+          
+          # Check 5: Has It blocks (actual tests)
+          $ItBlockCount = ([regex]::Matches($Script, "^\s*It\s+'", [System.Text.RegularExpressions.RegexOptions]::Multiline)).Count
+          if ($ItBlockCount -ge 3) {
+            $Results += "PASS: Has test cases ($ItBlockCount It blocks)"
+          } else {
+            $Results += "FAIL: Needs more tests - only $ItBlockCount It blocks found"
+          }
+          
+          # Check 6: Not just the starter comment
+          $CodeLines = ($Script -split "`n" | Where-Object { $_ -match '\S' -and $_ -notmatch '^\s*#' }).Count
+          if ($CodeLines -gt 20) {
+            $Results += "PASS: Has substantial implementation"
+          } else {
+            $Results += "FAIL: Test suite appears incomplete - build full test suite"
+          }
+          
+          # Summarize
+          $Passed = ($Results | Where-Object { $_ -match '^PASS' }).Count
+          $Failed = ($Results | Where-Object { $_ -match '^FAIL' }).Count
+          
+          Write-Host "===== PST-02: Complete Test Suite ====="
+          $Results | ForEach-Object { Write-Host $_ }
+          Write-Host ""
+          Write-Host "Result: $Passed passed, $Failed failed"
+          
+          if ($Failed -eq 0) {
+            Write-Host "::notice::PST-02 COMPLETED - All requirements met"
+            echo "pst02_status=PASSED" >> $env:GITHUB_OUTPUT
+          } else {
+            Write-Host "::warning::PST-02 INCOMPLETE - $Failed requirement(s) not met"
+            echo "pst02_status=FAILED" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Pester Module Summary
+        shell: pwsh
+        run: |
+          Write-Host ""
+          Write-Host "========================================="
+          Write-Host "  PESTER MODULE SUMMARY"
+          Write-Host "========================================="
+          Write-Host "PST-01 (Fix Broken Tests): ${{ steps.pst01.outputs.pst01_status }}"
+          Write-Host "PST-02 (Complete Test Suite): ${{ steps.pst02.outputs.pst02_status }}"
+          Write-Host "========================================="
+
+  validate-terraform-tasks:
+    name: Terraform Tasks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate TF-01 (Update vars-dev.tfvars)
+        id: tf01
+        shell: bash
+        run: |
+          FILE="./03_Terraform/vars-dev.tfvars"
+          RESULTS=()
+          
+          # Check 1: rg_name has been updated (not [NAME])
+          if grep -q '\[NAME\]' "$FILE" || grep -q '\[name\]' "$FILE"; then
+            RESULTS+=("FAIL: rg_name still contains [NAME] placeholder - replace with your actual name")
+          else
+            RESULTS+=("PASS: rg_name has been updated")
+          fi
+          
+          echo "===== TF-01: Update vars-dev.tfvars ====="
+          for result in "${RESULTS[@]}"; do echo "$result"; done
+          
+          FAILED=$(printf '%s\n' "${RESULTS[@]}" | grep -c "^FAIL" || true)
+          if [ "$FAILED" -eq 0 ]; then
+            echo "::notice::TF-01 COMPLETED - All requirements met"
+            echo "tf01_status=PASSED" >> $GITHUB_OUTPUT
+          else
+            echo "::warning::TF-01 INCOMPLETE - $FAILED requirement(s) not met"
+            echo "tf01_status=FAILED" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Validate TF-02 (Workspaces Module)
+        id: tf02
+        shell: bash
+        run: |
+          RESULTS=()
+          
+          # Check 1: Workspaces module main.tf is not empty
+          if [ -s "./03_Terraform/modules/workspaces/main.tf" ]; then
+            RESULTS+=("PASS: Workspaces module main.tf has content")
+          else
+            RESULTS+=("FAIL: Workspaces module main.tf is empty - populate with workspace resource")
+          fi
+          
+          # Check 2: Has workspace resource
+          if grep -q 'azurerm_virtual_desktop_workspace' "./03_Terraform/modules/workspaces/main.tf" 2>/dev/null; then
+            RESULTS+=("PASS: Has workspace resource defined")
+          else
+            RESULTS+=("FAIL: Missing azurerm_virtual_desktop_workspace resource")
+          fi
+          
+          # Check 3: Workspaces module variables.tf is not empty
+          if [ -s "./03_Terraform/modules/workspaces/variables.tf" ]; then
+            RESULTS+=("PASS: Workspaces module variables.tf has content")
+          else
+            RESULTS+=("FAIL: Workspaces module variables.tf is empty")
+          fi
+          
+          # Check 4: Workspaces module output.tf has id output
+          if grep -q 'output.*id' "./03_Terraform/modules/workspaces/output.tf" 2>/dev/null; then
+            RESULTS+=("PASS: Workspaces module has id output")
+          else
+            RESULTS+=("FAIL: Workspaces module missing id output")
+          fi
+          
+          # Check 5: Root main.tf calls workspaces module
+          if grep -q 'module.*workspaces' "./03_Terraform/main.tf" 2>/dev/null; then
+            RESULTS+=("PASS: Root main.tf calls workspaces module")
+          else
+            RESULTS+=("FAIL: Root main.tf missing workspaces module call")
+          fi
+          
+          # Check 6: Has depends_on for workspaces
+          if grep -q 'depends_on' "./03_Terraform/main.tf" 2>/dev/null; then
+            RESULTS+=("PASS: Has depends_on in main.tf")
+          else
+            RESULTS+=("FAIL: Missing depends_on - workspace should depend on resource-groups")
+          fi
+          
+          # Check 7: vars-dev.tfvars has workspace variables
+          if grep -q 'workspace' "./03_Terraform/vars-dev.tfvars" 2>/dev/null; then
+            RESULTS+=("PASS: vars-dev.tfvars has workspace variables")
+          else
+            RESULTS+=("FAIL: vars-dev.tfvars missing workspace variables")
+          fi
+          
+          echo "===== TF-02: Workspaces Module ====="
+          for result in "${RESULTS[@]}"; do echo "$result"; done
+          
+          PASSED=$(printf '%s\n' "${RESULTS[@]}" | grep -c "^PASS" || true)
+          FAILED=$(printf '%s\n' "${RESULTS[@]}" | grep -c "^FAIL" || true)
+          echo ""
+          echo "Result: $PASSED passed, $FAILED failed"
+          
+          if [ "$FAILED" -eq 0 ]; then
+            echo "::notice::TF-02 COMPLETED - All requirements met"
+            echo "tf02_status=PASSED" >> $GITHUB_OUTPUT
+          else
+            echo "::warning::TF-02 INCOMPLETE - $FAILED requirement(s) not met"
+            echo "tf02_status=FAILED" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Validate TF-03 (Host Pools)
+        id: tf03
+        shell: bash
+        run: |
+          RESULTS=()
+          
+          # Check 1: Root main.tf calls host-pools module
+          if grep -q 'module.*host-pools' "./03_Terraform/main.tf" 2>/dev/null; then
+            RESULTS+=("PASS: Root main.tf calls host-pools module")
+          else
+            RESULTS+=("FAIL: Root main.tf missing host-pools module call")
+          fi
+          
+          # Check 2: host_pools is uncommented and populated in vars-dev.tfvars
+          if grep -qE '^\s*host_pools\s*=' "./03_Terraform/vars-dev.tfvars" 2>/dev/null; then
+            RESULTS+=("PASS: host_pools defined in vars-dev.tfvars")
+          else
+            RESULTS+=("FAIL: host_pools commented out or missing in vars-dev.tfvars")
+          fi
+          
+          # Check 3: Has both Pooled and Personal host pools
+          if grep -q 'Pooled' "./03_Terraform/vars-dev.tfvars" 2>/dev/null && \
+             grep -q 'Personal' "./03_Terraform/vars-dev.tfvars" 2>/dev/null; then
+            RESULTS+=("PASS: Has both Pooled and Personal host pool types")
+          else
+            RESULTS+=("FAIL: Missing Pooled or Personal host pool type")
+          fi
+          
+          # Check 4: Root variables.tf has host_pools variable
+          if grep -q 'variable.*host_pools' "./03_Terraform/variables.tf" 2>/dev/null; then
+            RESULTS+=("PASS: Root variables.tf has host_pools")
+          else
+            RESULTS+=("FAIL: Root variables.tf missing host_pools variable")
+          fi
+          
+          echo "===== TF-03: Host Pools ====="
+          for result in "${RESULTS[@]}"; do echo "$result"; done
+          
+          PASSED=$(printf '%s\n' "${RESULTS[@]}" | grep -c "^PASS" || true)
+          FAILED=$(printf '%s\n' "${RESULTS[@]}" | grep -c "^FAIL" || true)
+          echo ""
+          echo "Result: $PASSED passed, $FAILED failed"
+          
+          if [ "$FAILED" -eq 0 ]; then
+            echo "::notice::TF-03 COMPLETED - All requirements met"
+            echo "tf03_status=PASSED" >> $GITHUB_OUTPUT
+          else
+            echo "::warning::TF-03 INCOMPLETE - $FAILED requirement(s) not met"
+            echo "tf03_status=FAILED" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Validate TF-04 (App Groups)
+        id: tf04
+        shell: bash
+        run: |
+          RESULTS=()
+          
+          # Check 1: Root main.tf calls app-groups module
+          if grep -q 'module.*app-groups' "./03_Terraform/main.tf" 2>/dev/null; then
+            RESULTS+=("PASS: Root main.tf calls app-groups module")
+          else
+            RESULTS+=("FAIL: Root main.tf missing app-groups module call")
+          fi
+          
+          # Check 2: app_groups is uncommented and populated
+          if grep -qE '^\s*app_groups\s*=' "./03_Terraform/vars-dev.tfvars" 2>/dev/null; then
+            RESULTS+=("PASS: app_groups defined in vars-dev.tfvars")
+          else
+            RESULTS+=("FAIL: app_groups commented out or missing")
+          fi
+          
+          # Check 3: Has both RemoteApp and Desktop types
+          if grep -q 'RemoteApp' "./03_Terraform/vars-dev.tfvars" 2>/dev/null && \
+             grep -q 'Desktop' "./03_Terraform/vars-dev.tfvars" 2>/dev/null; then
+            RESULTS+=("PASS: Has both RemoteApp and Desktop app group types")
+          else
+            RESULTS+=("FAIL: Missing RemoteApp or Desktop app group type")
+          fi
+          
+          # Check 4: Has workspace application group association resource
+          if grep -q 'azurerm_virtual_desktop_workspace_application_group_association' "./03_Terraform/main.tf" 2>/dev/null; then
+            RESULTS+=("PASS: Has workspace-app-group association resource")
+          else
+            RESULTS+=("FAIL: Missing azurerm_virtual_desktop_workspace_application_group_association")
+          fi
+          
+          # Check 5: Uses for_each for app-groups module
+          if grep -A5 'module.*app-groups' "./03_Terraform/main.tf" 2>/dev/null | grep -q 'for_each'; then
+            RESULTS+=("PASS: App-groups module uses for_each")
+          else
+            RESULTS+=("FAIL: App-groups module should use for_each")
+          fi
+          
+          echo "===== TF-04: App Groups ====="
+          for result in "${RESULTS[@]}"; do echo "$result"; done
+          
+          PASSED=$(printf '%s\n' "${RESULTS[@]}" | grep -c "^PASS" || true)
+          FAILED=$(printf '%s\n' "${RESULTS[@]}" | grep -c "^FAIL" || true)
+          echo ""
+          echo "Result: $PASSED passed, $FAILED failed"
+          
+          if [ "$FAILED" -eq 0 ]; then
+            echo "::notice::TF-04 COMPLETED - All requirements met"
+            echo "tf04_status=PASSED" >> $GITHUB_OUTPUT
+          else
+            echo "::warning::TF-04 INCOMPLETE - $FAILED requirement(s) not met"
+            echo "tf04_status=FAILED" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Validate TF-05 (Test Environment)
+        id: tf05
+        shell: bash
+        run: |
+          FILE="./03_Terraform/vars-test.tfvars"
+          RESULTS=()
+          
+          # Check 1: File is not empty
+          if [ -s "$FILE" ]; then
+            RESULTS+=("PASS: vars-test.tfvars has content")
+          else
+            RESULTS+=("FAIL: vars-test.tfvars is empty - populate with all required variables")
+          fi
+          
+          # Check 2: Has rg_name
+          if grep -q 'rg_name' "$FILE" 2>/dev/null; then
+            RESULTS+=("PASS: Has rg_name variable")
+          else
+            RESULTS+=("FAIL: Missing rg_name in vars-test.tfvars")
+          fi
+          
+          # Check 3: Has workspace variables (if TF-02 done)
+          if [ -s "./03_Terraform/modules/workspaces/main.tf" ]; then
+            if grep -q 'workspace' "$FILE" 2>/dev/null; then
+              RESULTS+=("PASS: Has workspace variables")
+            else
+              RESULTS+=("FAIL: Missing workspace variables in vars-test.tfvars")
+            fi
+          fi
+          
+          # Check 4: Has host_pools (if TF-03 done)
+          if grep -q 'module.*host-pools' "./03_Terraform/main.tf" 2>/dev/null; then
+            if grep -q 'host_pools' "$FILE" 2>/dev/null; then
+              RESULTS+=("PASS: Has host_pools variable")
+            else
+              RESULTS+=("FAIL: Missing host_pools in vars-test.tfvars")
+            fi
+          fi
+          
+          # Check 5: Has app_groups (if TF-04 done)
+          if grep -q 'module.*app-groups' "./03_Terraform/main.tf" 2>/dev/null; then
+            if grep -q 'app_groups' "$FILE" 2>/dev/null; then
+              RESULTS+=("PASS: Has app_groups variable")
+            else
+              RESULTS+=("FAIL: Missing app_groups in vars-test.tfvars")
+            fi
+          fi
+          
+          echo "===== TF-05: Test Environment ====="
+          for result in "${RESULTS[@]}"; do echo "$result"; done
+          
+          PASSED=$(printf '%s\n' "${RESULTS[@]}" | grep -c "^PASS" || true)
+          FAILED=$(printf '%s\n' "${RESULTS[@]}" | grep -c "^FAIL" || true)
+          echo ""
+          echo "Result: $PASSED passed, $FAILED failed"
+          
+          if [ "$FAILED" -eq 0 ]; then
+            echo "::notice::TF-05 COMPLETED - All requirements met"
+            echo "tf05_status=PASSED" >> $GITHUB_OUTPUT
+          else
+            echo "::warning::TF-05 INCOMPLETE - $FAILED requirement(s) not met"
+            echo "tf05_status=FAILED" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Terraform Module Summary
+        shell: bash
+        run: |
+          echo ""
+          echo "========================================="
+          echo "  TERRAFORM MODULE SUMMARY"
+          echo "========================================="
+          echo "TF-01 (Update vars-dev): ${{ steps.tf01.outputs.tf01_status }}"
+          echo "TF-02 (Workspaces Module): ${{ steps.tf02.outputs.tf02_status }}"
+          echo "TF-03 (Host Pools): ${{ steps.tf03.outputs.tf03_status }}"
+          echo "TF-04 (App Groups): ${{ steps.tf04.outputs.tf04_status }}"
+          echo "TF-05 (Test Environment): ${{ steps.tf05.outputs.tf05_status }}"
+          echo "========================================="
+
+  validate-nerdio-tasks:
+    name: Nerdio Tasks
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate NER-01 (Connect to Nerdio)
+        id: ner01
+        shell: pwsh
+        run: |
+          $Script = Get-Content -Path "./04_NerdioAsCode/02.Nerdio_01.ps1" -Raw
+          $Results = @()
+          
+          # Check 1: Uses Read-Host for credentials (no hardcoding)
+          $ReadHostCount = ([regex]::Matches($Script, 'Read-Host')).Count
+          if ($ReadHostCount -ge 5) {
+            $Results += "PASS: Uses Read-Host for all 5 credential parameters"
+          } elseif ($ReadHostCount -ge 1) {
+            $Results += "PASS: Uses Read-Host for credentials ($ReadHostCount instances)"
+          } else {
+            $Results += "FAIL: Should use Read-Host for secure credential entry"
+          }
+          
+          # Check 2: Calls Connect-NME
+          if ($Script -match 'Connect-NME') {
+            $Results += "PASS: Calls Connect-NME"
+          } else {
+            $Results += "FAIL: Missing Connect-NME call"
+          }
+          
+          # Check 3: No hardcoded secrets
+          if ($Script -match '[''"][0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}[''"]') {
+            $Results += "FAIL: Contains hardcoded GUID - remove secrets from code"
+          } else {
+            $Results += "PASS: No hardcoded GUIDs detected"
+          }
+          
+          # Summarize
+          $Passed = ($Results | Where-Object { $_ -match '^PASS' }).Count
+          $Failed = ($Results | Where-Object { $_ -match '^FAIL' }).Count
+          
+          Write-Host "===== NER-01: Connect to Nerdio ====="
+          $Results | ForEach-Object { Write-Host $_ }
+          Write-Host ""
+          Write-Host "Result: $Passed passed, $Failed failed"
+          
+          if ($Failed -eq 0) {
+            Write-Host "::notice::NER-01 COMPLETED - All requirements met"
+            echo "ner01_status=PASSED" >> $env:GITHUB_OUTPUT
+          } else {
+            Write-Host "::warning::NER-01 INCOMPLETE - $Failed requirement(s) not met"
+            echo "ner01_status=FAILED" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Validate NER-02 (Workspace Request Objects)
+        id: ner02
+        shell: pwsh
+        run: |
+          $Script = Get-Content -Path "./04_NerdioAsCode/03.Nerdio_02.ps1" -Raw
+          $Results = @()
+          
+          # Check 1: Creates NmeWvdObjectId
+          if ($Script -match 'New-NmeWvdObjectId|NmeWvdObjectId') {
+            $Results += "PASS: Creates NmeWvdObjectId object"
+          } else {
+            $Results += "FAIL: Missing NmeWvdObjectId creation"
+          }
+          
+          # Check 2: Creates NmeCreateWorkspaceRequest
+          if ($Script -match 'New-NmeCreateWorkspaceRequest|NmeCreateWorkspaceRequest') {
+            $Results += "PASS: Creates NmeCreateWorkspaceRequest object"
+          } else {
+            $Results += "FAIL: Missing NmeCreateWorkspaceRequest creation"
+          }
+          
+          # Check 3: Has substantial implementation
+          $CodeLines = ($Script -split "`n" | Where-Object { $_ -match '\S' -and $_ -notmatch '^\s*#' }).Count
+          if ($CodeLines -gt 15) {
+            $Results += "PASS: Has implementation code"
+          } else {
+            $Results += "FAIL: Script appears incomplete - build request objects"
+          }
+          
+          # Summarize
+          $Passed = ($Results | Where-Object { $_ -match '^PASS' }).Count
+          $Failed = ($Results | Where-Object { $_ -match '^FAIL' }).Count
+          
+          Write-Host "===== NER-02: Workspace Request Objects ====="
+          $Results | ForEach-Object { Write-Host $_ }
+          Write-Host ""
+          Write-Host "Result: $Passed passed, $Failed failed"
+          
+          if ($Failed -eq 0) {
+            Write-Host "::notice::NER-02 COMPLETED - All requirements met"
+            echo "ner02_status=PASSED" >> $env:GITHUB_OUTPUT
+          } else {
+            Write-Host "::warning::NER-02 INCOMPLETE - $Failed requirement(s) not met"
+            echo "ner02_status=FAILED" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Validate NER-03 (Workspace and Host Pool)
+        id: ner03
+        shell: pwsh
+        run: |
+          $Script = Get-Content -Path "./04_NerdioAsCode/04.Nerdio_03.ps1" -Raw
+          $Results = @()
+          
+          # Check 1: Has Connect-NME (builds on previous)
+          if ($Script -match 'Connect-NME') {
+            $Results += "PASS: Includes Connect-NME"
+          } else {
+            $Results += "FAIL: Missing Connect-NME - should build on task 01"
+          }
+          
+          # Check 2: Has workspace creation command
+          if ($Script -match 'New-NmeWorkspace') {
+            $Results += "PASS: Has New-NmeWorkspace command"
+          } else {
+            $Results += "FAIL: Missing New-NmeWorkspace command"
+          }
+          
+          # Check 3: Has host pool creation command
+          if ($Script -match 'New-NmeHostPool') {
+            $Results += "PASS: Has New-NmeHostPool command"
+          } else {
+            $Results += "FAIL: Missing New-NmeHostPool command"
+          }
+          
+          # Check 4: Has substantial implementation
+          $CodeLines = ($Script -split "`n" | Where-Object { $_ -match '\S' -and $_ -notmatch '^\s*#' }).Count
+          if ($CodeLines -gt 20) {
+            $Results += "PASS: Has substantial implementation"
+          } else {
+            $Results += "FAIL: Script appears incomplete"
+          }
+          
+          # Summarize
+          $Passed = ($Results | Where-Object { $_ -match '^PASS' }).Count
+          $Failed = ($Results | Where-Object { $_ -match '^FAIL' }).Count
+          
+          Write-Host "===== NER-03: Workspace and Host Pool ====="
+          $Results | ForEach-Object { Write-Host $_ }
+          Write-Host ""
+          Write-Host "Result: $Passed passed, $Failed failed"
+          
+          if ($Failed -eq 0) {
+            Write-Host "::notice::NER-03 COMPLETED - All requirements met"
+            echo "ner03_status=PASSED" >> $env:GITHUB_OUTPUT
+          } else {
+            Write-Host "::warning::NER-03 INCOMPLETE - $Failed requirement(s) not met"
+            echo "ner03_status=FAILED" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Nerdio Module Summary
+        shell: pwsh
+        run: |
+          Write-Host ""
+          Write-Host "========================================="
+          Write-Host "  NERDIO MODULE SUMMARY"
+          Write-Host "========================================="
+          Write-Host "NER-01 (Connect to Nerdio): ${{ steps.ner01.outputs.ner01_status }}"
+          Write-Host "NER-02 (Workspace Request): ${{ steps.ner02.outputs.ner02_status }}"
+          Write-Host "NER-03 (Workspace + Host Pool): ${{ steps.ner03.outputs.ner03_status }}"
+          Write-Host "========================================="
+
+  validate-gha-tasks:
+    name: GitHub Actions Tasks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate GHA-02 (Add Step)
+        id: gha02
+        shell: bash
+        run: |
+          FILE="./.github/workflows/02-task02.yml"
+          RESULTS=()
+          
+          # Check 1: Has additional step after Task02 Info Script
+          STEP_COUNT=$(grep -c "name:" "$FILE" 2>/dev/null || echo "0")
+          if [ "$STEP_COUNT" -ge 4 ]; then
+            RESULTS+=("PASS: Has additional step(s)")
+          else
+            RESULTS+=("FAIL: Missing additional step - add step after Task02 Info Script")
+          fi
+          
+          # Check 2: Uses Get-Host command
+          if grep -q 'Get-Host' "$FILE" 2>/dev/null; then
+            RESULTS+=("PASS: Uses Get-Host command")
+          else
+            RESULTS+=("FAIL: Missing Get-Host command")
+          fi
+          
+          # Check 3: Outputs RUNNER_OS
+          if grep -q 'RUNNER_OS' "$FILE" 2>/dev/null; then
+            RESULTS+=("PASS: Outputs RUNNER_OS")
+          else
+            RESULTS+=("FAIL: Missing RUNNER_OS output")
+          fi
+          
+          echo "===== GHA-02: Add Step ====="
+          for result in "${RESULTS[@]}"; do echo "$result"; done
+          
+          PASSED=$(printf '%s\n' "${RESULTS[@]}" | grep -c "^PASS" || true)
+          FAILED=$(printf '%s\n' "${RESULTS[@]}" | grep -c "^FAIL" || true)
+          echo ""
+          echo "Result: $PASSED passed, $FAILED failed"
+          
+          if [ "$FAILED" -eq 0 ]; then
+            echo "::notice::GHA-02 COMPLETED - All requirements met"
+            echo "gha02_status=PASSED" >> $GITHUB_OUTPUT
+          else
+            echo "::warning::GHA-02 INCOMPLETE - $FAILED requirement(s) not met"
+            echo "gha02_status=FAILED" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Validate GHA-03 (Script with Parameters)
+        id: gha03
+        shell: bash
+        run: |
+          FILE="./.github/workflows/03-task03.yml"
+          RESULTS=()
+          
+          # Check 1: Has Action input (choice type with ping/tracert/nslookup)
+          if grep -q 'ping' "$FILE" 2>/dev/null && grep -q 'tracert' "$FILE" 2>/dev/null && grep -q 'nslookup' "$FILE" 2>/dev/null; then
+            RESULTS+=("PASS: Has Action input with ping/tracert/nslookup options")
+          else
+            RESULTS+=("FAIL: Update inputs to include ping/tracert/nslookup options as choices")
+          fi
+          
+          # Check 2: Has Target input (check for input name, not just word)
+          if grep -qiE '^\s+target:|inputs\.target' "$FILE" 2>/dev/null; then
+            RESULTS+=("PASS: Has Target input")
+          else
+            RESULTS+=("FAIL: Missing Target input - add a string input named Target")
+          fi
+          
+          # Check 3: Has DryRun input (check for input name, not just type: boolean)
+          if grep -qiE '^\s+dryrun:|^\s+dry_run:|inputs\.dryrun|inputs\.dry_run' "$FILE" 2>/dev/null; then
+            RESULTS+=("PASS: Has DryRun input")
+          else
+            RESULTS+=("FAIL: Missing DryRun input - add a boolean input named DryRun")
+          fi
+          
+          # Check 4: Calls the script
+          if grep -q '03paramScript.ps1' "$FILE" 2>/dev/null; then
+            RESULTS+=("PASS: Calls 03paramScript.ps1")
+          else
+            RESULTS+=("FAIL: Missing step to call 03paramScript.ps1")
+          fi
+          
+          # Check 5: Uses inputs syntax to pass parameters
+          if grep -qE '\$\{\{ inputs\.' "$FILE" 2>/dev/null; then
+            RESULTS+=("PASS: Uses workflow inputs syntax")
+          else
+            RESULTS+=("FAIL: Missing inputs reference - use \${{ inputs.NAME }} to pass values")
+          fi
+          
+          echo "===== GHA-03: Script with Parameters ====="
+          for result in "${RESULTS[@]}"; do echo "$result"; done
+          
+          PASSED=$(printf '%s\n' "${RESULTS[@]}" | grep -c "^PASS" || true)
+          FAILED=$(printf '%s\n' "${RESULTS[@]}" | grep -c "^FAIL" || true)
+          echo ""
+          echo "Result: $PASSED passed, $FAILED failed"
+          
+          if [ "$FAILED" -eq 0 ]; then
+            echo "::notice::GHA-03 COMPLETED - All requirements met"
+            echo "gha03_status=PASSED" >> $GITHUB_OUTPUT
+          else
+            echo "::warning::GHA-03 INCOMPLETE - $FAILED requirement(s) not met"
+            echo "gha03_status=FAILED" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Validate GHA-05 (Deploy Script + Template + Caller)
+        id: gha05
+        shell: bash
+        run: |
+          SCRIPT="./05_GitHubActions/gha_scripts/05deployScript.ps1"
+          TEMPLATE="./.github/workflows/06-task05-template.yml"
+          CALLER="./.github/workflows/07-task05-caller.yml"
+          RESULTS=()
+          
+          # Script checks
+          if grep -q 'Write-Host.*Deployment Summary' "$SCRIPT" 2>/dev/null; then
+            RESULTS+=("PASS: Script outputs deployment summary")
+          else
+            RESULTS+=("FAIL: Script missing deployment summary output")
+          fi
+          
+          if grep -qi 'deployment.*tag\|tag.*deployment' "$SCRIPT" 2>/dev/null; then
+            RESULTS+=("PASS: Script builds deployment tag")
+          else
+            RESULTS+=("FAIL: Script missing deployment tag output")
+          fi
+          
+          # Template checks
+          if grep -q 'workflow_call:' "$TEMPLATE" 2>/dev/null && \
+             grep -A20 'workflow_call:' "$TEMPLATE" | grep -q 'inputs:'; then
+            RESULTS+=("PASS: Template has workflow_call inputs")
+          else
+            RESULTS+=("FAIL: Template missing workflow_call inputs")
+          fi
+          
+          if grep -q 'environment:' "$TEMPLATE" 2>/dev/null; then
+            RESULTS+=("PASS: Template sets environment context")
+          else
+            RESULTS+=("FAIL: Template missing environment context")
+          fi
+          
+          if grep -q '05deployScript.ps1' "$TEMPLATE" 2>/dev/null; then
+            RESULTS+=("PASS: Template calls deploy script")
+          else
+            RESULTS+=("FAIL: Template missing script call")
+          fi
+          
+          # Caller checks
+          if grep -q 'workflow_dispatch:' "$CALLER" 2>/dev/null && \
+             grep -A20 'workflow_dispatch:' "$CALLER" | grep -q 'inputs:'; then
+            RESULTS+=("PASS: Caller has workflow_dispatch inputs")
+          else
+            RESULTS+=("FAIL: Caller missing workflow_dispatch inputs")
+          fi
+          
+          if grep -q 'uses:.*06-task05-template.yml' "$CALLER" 2>/dev/null; then
+            RESULTS+=("PASS: Caller references template workflow")
+          else
+            RESULTS+=("FAIL: Caller missing template workflow reference")
+          fi
+          
+          echo "===== GHA-05: Deploy Script + Template + Caller ====="
+          for result in "${RESULTS[@]}"; do echo "$result"; done
+          
+          PASSED=$(printf '%s\n' "${RESULTS[@]}" | grep -c "^PASS" || true)
+          FAILED=$(printf '%s\n' "${RESULTS[@]}" | grep -c "^FAIL" || true)
+          echo ""
+          echo "Result: $PASSED passed, $FAILED failed"
+          
+          if [ "$FAILED" -eq 0 ]; then
+            echo "::notice::GHA-05 COMPLETED - All requirements met"
+            echo "gha05_status=PASSED" >> $GITHUB_OUTPUT
+          else
+            echo "::warning::GHA-05 INCOMPLETE - $FAILED requirement(s) not met"
+            echo "gha05_status=FAILED" >> $GITHUB_OUTPUT
+          fi
+
+      - name: GitHub Actions Module Summary
+        shell: bash
+        run: |
+          echo ""
+          echo "========================================="
+          echo "  GITHUB ACTIONS MODULE SUMMARY"
+          echo "========================================="
+          echo "GHA-01 (Review): REVIEW ONLY - No validation required"
+          echo "GHA-02 (Add Step): ${{ steps.gha02.outputs.gha02_status }}"
+          echo "GHA-03 (Script with Params): ${{ steps.gha03.outputs.gha03_status }}"
+          echo "GHA-04 (Template/Caller): REVIEW ONLY - No validation required"
+          echo "GHA-05 (Deploy Workflow): ${{ steps.gha05.outputs.gha05_status }}"
+          echo "GHA-06 (Triggers): LEARNING ONLY - No validation required"
+          echo "========================================="
+
+  final-summary:
+    name: Final Summary
+    needs: [validate-powershell-tasks, validate-pester-tasks, validate-terraform-tasks, validate-nerdio-tasks, validate-gha-tasks]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Generate Final Report
+        shell: bash
+        run: |
+          echo ""
+          echo "=============================================="
+          echo "         VDS-LnD TASK COMPLETION REPORT"
+          echo "=============================================="
+          echo ""
+          echo "This report shows whether each task's requirements"
+          echo "have been met. See individual job logs for details."
+          echo ""
+          echo "----------------------------------------------"
+          echo "MODULE: PowerShell (4 tasks)"
+          echo "----------------------------------------------"
+          echo "  Check workflow logs for individual task status"
+          echo ""
+          echo "----------------------------------------------"
+          echo "MODULE: Pester (2 tasks)"
+          echo "----------------------------------------------"
+          echo "  Check workflow logs for individual task status"
+          echo ""
+          echo "----------------------------------------------"
+          echo "MODULE: Terraform (5 tasks)"
+          echo "----------------------------------------------"
+          echo "  Check workflow logs for individual task status"
+          echo ""
+          echo "----------------------------------------------"
+          echo "MODULE: Nerdio as Code (3 tasks)"
+          echo "----------------------------------------------"
+          echo "  Check workflow logs for individual task status"
+          echo ""
+          echo "----------------------------------------------"
+          echo "MODULE: GitHub Actions (6 tasks)"
+          echo "----------------------------------------------"
+          echo "  GHA-01: Review only (no validation)"
+          echo "  GHA-02: Check workflow logs"
+          echo "  GHA-03: Check workflow logs"
+          echo "  GHA-04: Review only (no validation)"
+          echo "  GHA-05: Check workflow logs"
+          echo "  GHA-06: Learning only (no validation)"
+          echo ""
+          echo "=============================================="
+          echo "Review the job logs above for detailed results"
+          echo "=============================================="
