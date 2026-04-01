@@ -59,15 +59,20 @@ $CsvRows = @()
 
 foreach ($SessionHost in $SessionHosts) {
 
-     $ParsedHeartbeat = [DateTime]::Parse($SessionHost.LastHeartBeat)
+     try {
+         $ParsedHeartbeat = [DateTime]::Parse($SessionHost.LastHeartBeat)
+     } catch {
+         Write-Warning "Invalid LastHeartBeat value for host $($SessionHost.Name). Using placeholder."
+         $ParsedHeartbeat = [DateTime]::MinValue
+     }
 
      $Row = [PSCustomObject]@{
-          HostName        = $SessionHost.Name.Split('/')[1]
-          Status          = $SessionHost.Status
-          Sessions        = $SessionHost.Sessions
-          MaxSessionLimit = $SessionHost.MaxSessionLimit
-          AllowNewSession = $SessionHost.AllowNewSession
-          AssignedUser    = $SessionHost.AssignedUser
+          HostName        = if ($SessionHost.Name) { $SessionHost.Name.Split('/')[1] } else { 'Unknown' }
+          Status          = if ($SessionHost.Status) { $SessionHost.Status } else { 'Unknown' }
+          Sessions        = if ($SessionHost.Sessions) { $SessionHost.Sessions } else { 0 }
+          MaxSessionLimit = if ($SessionHost.MaxSessionLimit) { $SessionHost.MaxSessionLimit } else { 0 }
+          AllowNewSession = if ($SessionHost.AllowNewSession) { $SessionHost.AllowNewSession } else { $false }
+          AssignedUser    = if ($SessionHost.AssignedUser) { $SessionHost.AssignedUser } else { 'None' }
           LastHeartBeat   = $ParsedHeartbeat.ToString('dd/MM/yyyy HH:mm')
      }
 

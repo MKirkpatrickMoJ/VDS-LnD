@@ -33,71 +33,37 @@ NOTE: In a real scenario, the host name array would likely come from a parameter
         simplicity.
 #>
 
-$ExpectedPrefix = 'avd-prod-sh-'
-$MaxLength      = 15
 $OutputPath     = '.\01_PowerShell\compliance-results.json'
-
 $OutputDirectory = Split-Path -Path $OutputPath -Parent
 if (-not (Test-Path -Path $OutputDirectory)) {
     New-Item -Path $OutputDirectory -ItemType Directory -Force | Out-Null
 }
 
-# --------------------------------------------------------------------------------------------------
-# INTENTIONALLY REPETITIVE CODE - refactor this using a function and a loop
-# --------------------------------------------------------------------------------------------------
+function Test-HostNameCompliance {
+    param (
+        [string]$HostName,
+        [string]$ExpectedPrefix,
+        [int]$MaxLength
+    )
+    $PrefixValid = $HostName.StartsWith($ExpectedPrefix)
+    $LengthValid = $HostName.Length -le $MaxLength
 
-# Host 1
-$PrefixValid = 'avd-prod-sh-01'.StartsWith($ExpectedPrefix)
-$LengthValid = 'avd-prod-sh-01'.Length -le $MaxLength
+    $Result = [PSCustomObject]@{
+        HostName    = $HostName
+        PrefixValid = $PrefixValid
+        LengthValid = $LengthValid
+        IsCompliant = ($PrefixValid -and $LengthValid)
+    }
 
-$Result = [PSCustomObject]@{
-    HostName    = 'avd-prod-sh-01'
-    PrefixValid = $PrefixValid
-    LengthValid = $LengthValid
-    IsCompliant = ($PrefixValid -and $LengthValid)
+    $Result | ConvertTo-Json -Depth 2 | Add-Content -Path $OutputPath -Encoding UTF8
+    return $Result
 }
 
-$Result | ConvertTo-Json -Depth 2 | Add-Content -Path $OutputPath -Encoding UTF8
-$Result
+$ExpectedPrefix = 'avd-prod-sh-'
+$MaxLength      = 15
 
-# Host 2
-$PrefixValid = 'avd-prod-sh-02'.StartsWith($ExpectedPrefix)
-$LengthValid = 'avd-prod-sh-02'.Length -le $MaxLength
+$HostNames = @('avd-prod-sh-01', 'avd-prod-sh-02', 'avd-prod-sh-1234', 'wvd-prod-sh-04')
 
-$Result = [PSCustomObject]@{
-    HostName    = 'avd-prod-sh-02'
-    PrefixValid = $PrefixValid
-    LengthValid = $LengthValid
-    IsCompliant = ($PrefixValid -and $LengthValid)
+foreach ($HostName in $HostNames) {
+    Test-HostNameCompliance -HostName $HostName -ExpectedPrefix $ExpectedPrefix -MaxLength $MaxLength
 }
-
-$Result | ConvertTo-Json -Depth 2 | Add-Content -Path $OutputPath -Encoding UTF8
-$Result
-
-# Host 3 - note: this host fails due to length only
-$PrefixValid = 'avd-prod-sh-1234'.StartsWith($ExpectedPrefix)
-$LengthValid = 'avd-prod-sh-1234'.Length -le $MaxLength
-
-$Result = [PSCustomObject]@{
-    HostName    = 'avd-prod-sh-1234'
-    PrefixValid = $PrefixValid
-    LengthValid = $LengthValid
-    IsCompliant = ($PrefixValid -and $LengthValid)
-}
-
-$Result | ConvertTo-Json -Depth 2 | Add-Content -Path $OutputPath -Encoding UTF8
-$Result
-
-# Host 4 - note: this host fails due to prefix only
-$PrefixValid = 'wvd-prod-sh-04'.StartsWith($ExpectedPrefix)
-$LengthValid = 'wvd-prod-sh-04'.Length -le $MaxLength
-
-$Result = [PSCustomObject]@{
-    HostName    = 'wvd-prod-sh-04'
-    PrefixValid = $PrefixValid
-    LengthValid = $LengthValid
-    IsCompliant = ($PrefixValid -and $LengthValid)
-}
-
-$Result | ConvertTo-Json -Depth 2 | Add-Content -Path $OutputPath -Encoding UTF8
-$Result

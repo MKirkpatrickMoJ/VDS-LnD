@@ -3,14 +3,21 @@ name: LnD-GHA-Task05-Caller
 on:
   workflow_dispatch:
     inputs:
-      # TODO: Define the inputs for the caller workflow
-      # - env         (choice: dev / prod)
-      # - version     (string - the version number or tag being deployed)
+      version:
+        description: 'The version of the application to deploy'
+        required: true
+        default: '1.0.0'
+      environment:
+        description: 'The environment to deploy to (e.g., dev, staging, prod)'
+        required: true
+        default: 'dev'
 
 permissions:
   contents: read
 
 jobs:
   call_task05:
-    # TODO: Call the template workflow at ./.github/workflows/06-task05-template.yml
-    # TODO: Pass the workflow inputs through to the template
+    uses: ./.github/workflows/06-task05-template.yml
+    with:
+      version: ${{ inputs.version }}
+      env: ${{ inputs.environment }}

@@ -3,18 +3,19 @@ name: LnD-GHA-Task03
 on:
   workflow_dispatch:
     inputs:
-      example:
+      Action:
         description: An example input
         required: true
         type: choice
         options:
-          - option1
-          - option2
-      example2:
+          - ping
+          - tracert
+          - nsconfig
+      DryRun:
         description: Another example boolean input
         required: false
         type: boolean
-      example3:
+      Target:
         description: An example string input
         required: true
         type: string
@@ -37,3 +38,16 @@ jobs:
          Write-Host "I need to run a script using the inputs from the workflow dispatch event."
          Write-Host "The inputs need to be modified to be accurate to reflect the needs of the script"
          Write-Host "Then the step to call the script needs to be added to the workflow file, along with the parameters."
+
+     - name: Run Script with Inputs
+       shell: pwsh
+       run: |
+         $action = "${{ inputs.Action }}"
+         $DryRun = [System.Convert]::ToBoolean("${{ inputs.DryRun }}"
+         $target = "${{ inputs.Target }}"
+
+         Write-Host "Action: $action"
+         Write-Host "DryRun: $dryRun"
+         Write-Host "Target: $target"
+
+         .\scripts\Task03-Script.ps1 -Action $action -DryRun $dryRun -Target $target

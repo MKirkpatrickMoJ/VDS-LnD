@@ -36,11 +36,16 @@ TODO 5: Keep output object structure unchanged.
 # --------------------------------------------------------------------------------------------------
 # Starter values (INTENTIONALLY HARDCODED FOR THE TASK)
 # --------------------------------------------------------------------------------------------------
-$EnvironmentName = 'LD'
-$HostPoolName    = 'avd-hostpool-01'
-$SessionHostName = 'avd-sh-01'
-$RunDate         = '2026-01-01T00:00:00Z'
-$OutputPath      = '.\01_PowerShell\report-ld-avd-sh-01.json'
+param (
+    [Parameter()]
+    [string]$EnvironmentName = 'LD',
+    [Parameter()]
+    [string]$HostPoolName = 'avd-hostpool-01'
+)
+
+$SessionHostName = $env:COMPUTERNAME
+$RunDate         = get-date -Format 'yyyy-MM-ddTHH-mm-ssZ' -AsUTC
+$OutputPath      = join-path -path '.\01_PowerShell' -childpath "$($RunDate)-report-$($EnvironmentName)-$($HostPoolName)-$($SessionHostName).json"
 
 # --------------------------------------------------------------------------------------------------
 # Existing behaviour (keep this behaviour, but remove hardcoded inputs above)

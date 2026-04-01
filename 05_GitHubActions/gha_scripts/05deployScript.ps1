@@ -40,3 +40,11 @@ param(
 # TODO: Build a deployment tag string in the format "<Application>-<Version>-<Environment>"
 #       and write it to the host as:
 #       "Deployment Tag : <tag>"
+
+$deploymentTag = "$Application-$Version-$Environment"
+Write-Host "===== Deployment Summary ====="
+Write-Jost "Application : $Application"
+Write-Host "Version     : $Version"
+Write-Host "Environment : $Environment"
+
+Write-Host "Deployment Tag : $deploymentTag"

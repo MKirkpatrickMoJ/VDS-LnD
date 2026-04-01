@@ -42,3 +42,64 @@ TODO 8: Output a clear final result (objects are fine) and a summary count.
 #>
 
 # Build the full solution below using the requirements above, the previous tasks should make this straightforward.
+
+param (
+    [string]$JsonPath = ".\01_PowerShell\06.TASK-DATA.json"
+)
+
+$testPath = Test-Path $JsonPath -ErrorAction Stop
+if ($testPath) {
+    Write-Host "Input JSON path validated: $JsonPath"
+}
+else {
+    throw "Input JSON path is invalid: $JsonPath"
+}
+
+$jsonContent = Get-Content -Path $JsonPath -ErrorAction Stop
+if ($jsonContent) {
+    Write-Host "JSON file read successfully."
+}
+else {
+    throw "JSON file is empty: $JsonPath"
+}
+
+$dataObject = $null
+try {
+    $dataObject = $jsonContent | ConvertFrom-Json -ErrorAction Stop
+    Write-Host "JSON parsing completed successfully."
+}
+catch {
+    throw "Failed to parse JSON: $_"
+}
+
+function Get-NonAvailableHosts {
+    param (
+        [array]$HostData
+    )
+
+    if (-not $HostData) {
+        Write-Warning "No host data provided to the function."
+        return @()
+    }
+
+    $filteredHosts = @()
+    foreach ($shost in $HostData) {
+
+        if ($shost.Status -ne "Available") {
+            $filteredHosts += [PSCustomObject]@{
+                HostName     = if ($shost.HostName) { $shost.HostName } else { 'Unknown' }
+                Status       = if ($shost.Status) { $shost.Status } else { 'Unknown' }
+                AssignedUser = if ($shost.AssignedUser) { $shost.AssignedUser } else { 'Unknown' }
+            }
+        }
+    }
+    return $filteredHosts
+}
+$nonAvailableHosts = Get-NonAvailableHosts -HostData $dataObject
+if ($nonAvailableHosts.Count -gt 0) {
+    Write-Host "Filtering complete. Found $($nonAvailableHosts.Count) non-available hosts."
+    $nonAvailableHosts | Format-Table -AutoSize
+}
+else {
+    Write-Host "No non-available hosts found."
+}

@@ -20,3 +20,12 @@ jobs:
          Write-Host "This is Task 02!"
          Write-Host "I want to know about what host I'm running on."
          Write-Host "Let's find out in the next Step..."
+      
+     - name: Task02 Host Info Script
+       shell: pwsh
+       run: |
+         Write-Host "This is Task 02 Host Info Script!"
+         Write-Host "Here is some information about the host I'm running on:"
+         $hostinfo = Get-Host
+         Write-Host "Host Name: $($hostinfo.Name)"
+         Write-Host "Operating System: $env:OS"

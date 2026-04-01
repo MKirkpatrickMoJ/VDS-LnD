@@ -1,0 +1,24 @@
+{
+  "HostName": "avd-prod-sh-01",
+  "PrefixValid": true,
+  "LengthValid": true,
+  "IsCompliant": true
+}
+{
+  "HostName": "avd-prod-sh-02",
+  "PrefixValid": true,
+  "LengthValid": true,
+  "IsCompliant": true
+}
+{
+  "HostName": "avd-prod-sh-1234",
+  "PrefixValid": true,
+  "LengthValid": false,
+  "IsCompliant": false
+}
+{
+  "HostName": "wvd-prod-sh-04",
+  "PrefixValid": false,
+  "LengthValid": true,
+  "IsCompliant": false
+}

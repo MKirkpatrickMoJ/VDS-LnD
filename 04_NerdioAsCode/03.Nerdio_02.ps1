@@ -33,3 +33,39 @@ Get-Help New-NmeWvdObjectId -Full
 
 # It is not necessary to actually create the workspace, but the script should be completed to a point
 # where the New-NmeWorkspace command can be run without any errors if so desired.
+
+param (
+    [Parameter(mandatory=$true)]
+    [string]$clientId,
+    [Parameter(mandatory=$true)]
+    [string]$clientSecret,
+    [Parameter(mandatory=$true)]
+    [string]$tenantId,
+    [Parameter(mandatory=$true)]
+    [string]$apiScope,
+    [Parameter(mandatory=$true)]
+    [string]$nmeUri,
+    [Parameter(mandatory=$true)]
+    [string]$subscriptionId,
+    [Parameter(mandatory=$true)]
+    [string]$RG,
+    [Parameter(mandatory=$true)]
+    [string]$wsName,
+    [Parameter(mandatory=$true)]
+    [string]$location,
+    [Parameter(mandatory=$true)]
+    [string]$friendlyName,
+    [Parameter(mandatory=$true)]
+    [string]$description
+)
+
+connect-nme `
+    -clientID $clientId `
+    -clientsecret $clientSecret `
+    -TenantId $tenantId `
+    -ApiScope $apiScope `
+    -NmeUri $nmeUri
+
+$nmeWvdObjectId = New-NmeWvdObjectId -SubscriptionId $subscriptionId -ResourceGroup $RG -Name $wsName
+$workspaceRequest = New-NmeCreateWorkspaceRequest -Id $nmeWvdObjectId -Location $location -FriendlyName $friendlyName -Description $description
+New-NmeWorkspace -NmeCreateWorkspaceRequest $workspaceRequest

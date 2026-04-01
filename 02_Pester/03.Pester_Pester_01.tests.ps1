@@ -245,11 +245,11 @@ Describe 'Testing 02.Pester_PSScript_01.ps1 entire script' {
     ##
     ##  THERE ARE FOUR ISSUES TO FIX IN THIS TEST:
     #################################################################################################################
-      #Mock Connect-AzAccount {}
+      Mock Connect-AzAccount {}
       Mock Get-AzWvdHostPool {
         [PSCustomObject]@{
           Id                  = 'abc-456'
-          Name                = 'nonmmatchingname'
+          Name                = 'testhp-002'
           ResourceGroupName   = 'Test-RG'
         }
       }
@@ -267,8 +267,8 @@ Describe 'Testing 02.Pester_PSScript_01.ps1 entire script' {
         -SubId $TestSubId `
         -HpNaming $TestHpNaming `
         -OutputPath $TestOutputPath } `
-        | Should -Throw "That is not a real path"
-        Assert-MockCalled Export-Csv -Exactly 1
+        | Should -Throw "The specified output directory is not valid*"
+        Assert-MockCalled Test-Path -Exactly 1
     }
     it 'Should throw if the csv fails to export'{
       #################################################################################################################
@@ -278,7 +278,31 @@ Describe 'Testing 02.Pester_PSScript_01.ps1 entire script' {
       ## to reach the Export-Csv call. This is a good example of how tests can build on each other, and how having
       ## comprehensive mocks can help isolate and test specific error handling scenarios.
       #################################################################################################################
-      Mock
+      Mock Connect-AzAccount {}
+      Mock Get-AzWvdHostPool {
+        [PSCustomObject]@{
+          Id                  = 'abc-456'
+          Name                = 'testhp-002'
+          ResourceGroupName   = 'Test-RG'
+        }
+      }
+      Mock Get-AzWvdSessionHost {
+        @(
+          [PSCustomObject]@{ Id = "host1-id"; Name = "testhost1" },
+          [PSCustomObject]@{ Id = "host2-id"; Name = "testhost2" }
+        )
+      }
+      Mock Test-Path { $true }
+      Mock Export-Csv { throw "Error exporting CSV: Disk full" }
+      { Invoke-PSScript01 `
+        -User $TestUser `
+        -Password $TestPassword `
+        -TenantId $TestTenantId `
+        -SubId $TestSubId `
+        -HpNaming $TestHpNaming `
+        -OutputPath $TestOutputPath } `
+        | Should -Throw "Error exporting report*"
+        Assert-MockCalled Export-Csv -Exactly 1
     }
   }
 }
