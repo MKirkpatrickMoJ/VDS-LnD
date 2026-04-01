@@ -5,7 +5,7 @@ Objective:
 - Produce a script that can create a workspace request end-to-end.
 - You do not need to execute New-NmeWorkspace unless you want to.
 
-Discovery path:
+Discovery path: #>
 Get-Help New-NmeWorkspace -Full
 
 ## This will provide the information required to be able to create a new workspace.
