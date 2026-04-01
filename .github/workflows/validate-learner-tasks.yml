@@ -1177,9 +1177,9 @@ jobs:
           
           count_result() {
             if [ "$1" == "PASSED" ]; then
-              ((TOTAL_PASSED++))
+              TOTAL_PASSED=$((TOTAL_PASSED + 1))
             else
-              ((TOTAL_FAILED++))
+              TOTAL_FAILED=$((TOTAL_FAILED + 1))
             fi
           }
           
