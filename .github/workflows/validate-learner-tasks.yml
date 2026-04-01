@@ -13,6 +13,11 @@ jobs:
   validate-powershell-tasks:
     name: PowerShell Tasks
     runs-on: windows-latest
+    outputs:
+      ps01_status: ${{ steps.ps01.outputs.ps01_status }}
+      ps02_status: ${{ steps.ps02.outputs.ps02_status }}
+      ps03_status: ${{ steps.ps03.outputs.ps03_status }}
+      ps04_status: ${{ steps.ps04.outputs.ps04_status }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -327,6 +332,9 @@ jobs:
   validate-pester-tasks:
     name: Pester Tasks
     runs-on: windows-latest
+    outputs:
+      pst01_status: ${{ steps.pst01.outputs.pst01_status }}
+      pst02_status: ${{ steps.pst02.outputs.pst02_status }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -466,6 +474,12 @@ jobs:
   validate-terraform-tasks:
     name: Terraform Tasks
     runs-on: ubuntu-latest
+    outputs:
+      tf01_status: ${{ steps.tf01.outputs.tf01_status }}
+      tf02_status: ${{ steps.tf02.outputs.tf02_status }}
+      tf03_status: ${{ steps.tf03.outputs.tf03_status }}
+      tf04_status: ${{ steps.tf04.outputs.tf04_status }}
+      tf05_status: ${{ steps.tf05.outputs.tf05_status }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -757,6 +771,10 @@ jobs:
   validate-nerdio-tasks:
     name: Nerdio Tasks
     runs-on: windows-latest
+    outputs:
+      ner01_status: ${{ steps.ner01.outputs.ner01_status }}
+      ner02_status: ${{ steps.ner02.outputs.ner02_status }}
+      ner03_status: ${{ steps.ner03.outputs.ner03_status }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -923,6 +941,10 @@ jobs:
   validate-gha-tasks:
     name: GitHub Actions Tasks
     runs-on: ubuntu-latest
+    outputs:
+      gha02_status: ${{ steps.gha02.outputs.gha02_status }}
+      gha03_status: ${{ steps.gha03.outputs.gha03_status }}
+      gha05_status: ${{ steps.gha05.outputs.gha05_status }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -1124,46 +1146,115 @@ jobs:
     if: always()
     steps:
       - name: Generate Final Report
+        env:
+          PS01: ${{ needs.validate-powershell-tasks.outputs.ps01_status }}
+          PS02: ${{ needs.validate-powershell-tasks.outputs.ps02_status }}
+          PS03: ${{ needs.validate-powershell-tasks.outputs.ps03_status }}
+          PS04: ${{ needs.validate-powershell-tasks.outputs.ps04_status }}
+          PST01: ${{ needs.validate-pester-tasks.outputs.pst01_status }}
+          PST02: ${{ needs.validate-pester-tasks.outputs.pst02_status }}
+          TF01: ${{ needs.validate-terraform-tasks.outputs.tf01_status }}
+          TF02: ${{ needs.validate-terraform-tasks.outputs.tf02_status }}
+          TF03: ${{ needs.validate-terraform-tasks.outputs.tf03_status }}
+          TF04: ${{ needs.validate-terraform-tasks.outputs.tf04_status }}
+          TF05: ${{ needs.validate-terraform-tasks.outputs.tf05_status }}
+          NER01: ${{ needs.validate-nerdio-tasks.outputs.ner01_status }}
+          NER02: ${{ needs.validate-nerdio-tasks.outputs.ner02_status }}
+          NER03: ${{ needs.validate-nerdio-tasks.outputs.ner03_status }}
+          GHA02: ${{ needs.validate-gha-tasks.outputs.gha02_status }}
+          GHA03: ${{ needs.validate-gha-tasks.outputs.gha03_status }}
+          GHA05: ${{ needs.validate-gha-tasks.outputs.gha05_status }}
         shell: bash
         run: |
           echo ""
           echo "=============================================="
-          echo "         VDS-LnD TASK COMPLETION REPORT"
+          echo "       VDS-LnD TASK COMPLETION REPORT"
           echo "=============================================="
-          echo ""
-          echo "This report shows whether each task's requirements"
-          echo "have been met. See individual job logs for details."
+          
+          # Count results
+          TOTAL_PASSED=0
+          TOTAL_FAILED=0
+          
+          count_result() {
+            if [ "$1" == "PASSED" ]; then
+              ((TOTAL_PASSED++))
+            else
+              ((TOTAL_FAILED++))
+            fi
+          }
+          
+          print_status() {
+            if [ "$2" == "PASSED" ]; then
+              echo "  $1: ✅ PASSED"
+            else
+              echo "  $1: ❌ FAILED"
+            fi
+          }
+          
           echo ""
           echo "----------------------------------------------"
           echo "MODULE: PowerShell (4 tasks)"
           echo "----------------------------------------------"
-          echo "  Check workflow logs for individual task status"
+          print_status "PS-01 (Parameterised Script)" "$PS01"
+          print_status "PS-02 (Refactor to Function)" "$PS02"
+          print_status "PS-03 (Error Handling)" "$PS03"
+          print_status "PS-04 (Build from Scratch)" "$PS04"
+          count_result "$PS01"; count_result "$PS02"; count_result "$PS03"; count_result "$PS04"
+          
           echo ""
           echo "----------------------------------------------"
           echo "MODULE: Pester (2 tasks)"
           echo "----------------------------------------------"
-          echo "  Check workflow logs for individual task status"
+          print_status "PST-01 (Fix Broken Tests)" "$PST01"
+          print_status "PST-02 (Complete Test Suite)" "$PST02"
+          count_result "$PST01"; count_result "$PST02"
+          
           echo ""
           echo "----------------------------------------------"
           echo "MODULE: Terraform (5 tasks)"
           echo "----------------------------------------------"
-          echo "  Check workflow logs for individual task status"
+          print_status "TF-01 (Update vars-dev)" "$TF01"
+          print_status "TF-02 (Workspaces Module)" "$TF02"
+          print_status "TF-03 (Host Pools)" "$TF03"
+          print_status "TF-04 (App Groups)" "$TF04"
+          print_status "TF-05 (Test Environment)" "$TF05"
+          count_result "$TF01"; count_result "$TF02"; count_result "$TF03"; count_result "$TF04"; count_result "$TF05"
+          
           echo ""
           echo "----------------------------------------------"
           echo "MODULE: Nerdio as Code (3 tasks)"
           echo "----------------------------------------------"
-          echo "  Check workflow logs for individual task status"
+          print_status "NER-01 (Connect to Nerdio)" "$NER01"
+          print_status "NER-02 (Workspace Request)" "$NER02"
+          print_status "NER-03 (Workspace + Host Pool)" "$NER03"
+          count_result "$NER01"; count_result "$NER02"; count_result "$NER03"
+          
           echo ""
           echo "----------------------------------------------"
-          echo "MODULE: GitHub Actions (6 tasks)"
+          echo "MODULE: GitHub Actions (3 validated + 3 review)"
           echo "----------------------------------------------"
-          echo "  GHA-01: Review only (no validation)"
-          echo "  GHA-02: Check workflow logs"
-          echo "  GHA-03: Check workflow logs"
-          echo "  GHA-04: Review only (no validation)"
-          echo "  GHA-05: Check workflow logs"
-          echo "  GHA-06: Learning only (no validation)"
+          echo "  GHA-01 (Review Workflow): 📖 Review only"
+          print_status "GHA-02 (Add Step)" "$GHA02"
+          print_status "GHA-03 (Script with Params)" "$GHA03"
+          echo "  GHA-04 (Template/Caller): 📖 Review only"
+          print_status "GHA-05 (Deploy Workflow)" "$GHA05"
+          echo "  GHA-06 (Triggers): 📖 Learning only"
+          count_result "$GHA02"; count_result "$GHA03"; count_result "$GHA05"
+          
           echo ""
           echo "=============================================="
-          echo "Review the job logs above for detailed results"
+          echo "                  SUMMARY"
+          echo "=============================================="
+          echo ""
+          echo "  Total Validated Tasks: 17"
+          echo "  ✅ Passed: $TOTAL_PASSED"
+          echo "  ❌ Failed: $TOTAL_FAILED"
+          echo ""
+          if [ "$TOTAL_FAILED" -eq 0 ]; then
+            echo "  🎉 ALL TASKS COMPLETED! Great work!"
+          else
+            echo "  📝 $TOTAL_FAILED task(s) still need work."
+            echo "     Check individual job logs for details."
+          fi
+          echo ""
           echo "=============================================="
