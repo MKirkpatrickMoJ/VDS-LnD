@@ -14,7 +14,7 @@ As we transition away from a more GUI-Nerdio based way of working, and more towa
 
 ### Prerequisites
 
-Before starting, ensure you have the following installed and updated. Open a terminal and run these commands (in VS Code's integrated terminal or your local PowerShell):
+Before starting, ensure you have the following installed and updated. Open a terminal and run these commands (it is often easier to run these in an admin PowerShell 5.1 terminal):
 
 ```powershell
 # Update PowerShell to 7.x (if not already installed)
