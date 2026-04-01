@@ -50,3 +50,14 @@ Each folder will have a set of instructions of tasks in increasing complexity. T
 3. **Terraform** - The ultimate infrastructure as code tool - covers almost all things infrastructure. This segment will provide some setup, creating a basic module, variables and calling these to create (and then destroy!)
 4. **Nerdio as Code** - A smaller segment as this is ultimately just PowerShell, but provides an opportunity to get a look at how the code is put together.
 5. **GitHub Actions** - A chance to utilise real DevOps principals such as CI/CD, as well as create a place to deploy code in an auditable fashion (as in, not locally).
+
+## On Completion
+
+When you have completed every task, there is some automated marking. While this isn't perfect, it will give a good indication of progress. Feel free to reach out to Codeowners for help.
+
+1) Ensure your branch is published (this should already be the case due to GitHub Actions tasks)
+2) `commit` and `push` all file changes
+3) Within GitHub, create a Pull Request against main.
+    - Note that this will **not** be merged
+    - An Action will run `Validate Learner Task Completion`
+    - This provides an overview per task and an overall summary
