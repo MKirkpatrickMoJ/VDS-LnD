@@ -43,7 +43,7 @@ param(
 
 $deploymentTag = "$Application-$Version-$Environment"
 Write-Host "===== Deployment Summary ====="
-Write-Jost "Application : $Application"
+Write-Host "Application : $Application"
 Write-Host "Version     : $Version"
 Write-Host "Environment : $Environment"
 
